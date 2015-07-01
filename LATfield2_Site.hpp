@@ -323,7 +323,7 @@ bool Site::setCoord(int x, int y=0, int z=0)
 Lattice& Site::lattice() { return *lattice_ ; }
 
 
-#ifdef FFT3D
+#ifdef WITH_FFTS
 
 /*! \class cKSite  
  \brief A child of Site, built to work with the fourier space lattices for complex to complex transforms.

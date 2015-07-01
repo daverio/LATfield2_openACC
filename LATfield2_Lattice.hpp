@@ -63,7 +63,7 @@ class Lattice
          */ 
 		void initialize(int dim, const int size, int halo);
         
-#ifdef FFT3D
+#ifdef WITH_FFTS
         
         
         /*!
@@ -398,7 +398,7 @@ void Lattice::initialize(int dim, const int* size, int halo)
 	
 	
 }
-#ifdef FFT3D
+#ifdef WITH_FFTS
 void Lattice::initializeRealFFT(Lattice & lat_real, int halo)
 {
 	

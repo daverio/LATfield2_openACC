@@ -29,10 +29,11 @@ class Imag
 
  private:
 	
-#ifndef FFT
+#ifndef FFT3D
 	Real data[2];
 #endif
-#ifdef FFT
+    
+#ifdef FFT3D
 #ifdef SINGLE
 	fftwf_complex data;
 #endif
@@ -67,7 +68,7 @@ class Imag
   friend Imag operator*(Imag z,Real a) { return Imag(z.real()*a, z.imag()*a); }
   friend Imag operator*(Real a,Imag z) { return Imag(z.real()*a, z.imag()*a); }
   friend Imag operator/(Imag z,Real a) { return Imag(z.real()/a, z.imag()/a); }
-
+  friend Imag operator/(Real a,Imag z) { return Imag(a,0.0)/z; }
 
   //SELF ADDITION, ETC WITH Imag OPERATORS
   void operator+=(Imag z) { data[0] += z.real(); data[1] += z.imag(); }
@@ -99,6 +100,5 @@ class Imag
 };
 
 
-Imag expi(Real x);
 
 #endif
