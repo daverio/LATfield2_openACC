@@ -69,7 +69,6 @@ class PlanFFT_ACC
          */
 		void execute(int fft_type);
 
-
 #endif		
         
     private:

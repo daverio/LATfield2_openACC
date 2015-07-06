@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     phi.initialize(lat,comp);
     
     Field<Imag> phiK;
-    phiK.initialize(latKreal,comp);
+    phiK.initialize(latK,comp);
     
     PlanFFT<Imag> planReal(&phi,&phiK);
     
