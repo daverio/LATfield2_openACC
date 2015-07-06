@@ -1,15 +1,15 @@
-#ifndef LATFIELD2_PLANFFT_CPU_HPP
-#define LATFIELD2_PLANFFT_CPU_HPP
+#ifndef LATFIELD2_PLANFFT_ACC_HPP
+#define LATFIELD2_PLANFFT_ACC_HPP
 
-/*! \file LATfield2_PlanFFT_CPU.hpp
+/*! \file LATfield2_PlanFFT_ACC.hpp
  \brief FFT wrapper
  
- LATfield2_PlanFFT_CPU.hpp contain the class PlanFFT_CPU definition.
+ LATfield2_PlanFFT_ACC.hpp contain the class PlanFFT_ACC definition.
  
  */ 
 
 
-/*! \class PlanFFT_CPU  
+/*! \class PlanFFT_ACC  
  
  \brief Class which handle fourier transforms of fields on 3d cubic lattices.
  
@@ -26,11 +26,11 @@
  
  */
 template<class compType>
-class PlanFFT_CPU
+class PlanFFT_ACC
 	{
 	public:
         //! Constructor.
-		PlanFFT_CPU();
+		PlanFFT_ACC();
 		
 #ifndef SINGLE
 		
@@ -42,7 +42,7 @@ class PlanFFT_CPU
          \param mem_type : memory type (FFT_OUT_OF_PLACE or FFT_IN_PLACE). In place mean that both fourier and real space field point to the same data array.
             
          */ 
-		PlanFFT_CPU(Field<compType>* rfield, Field<compType>*  kfield,const int mem_type = FFT_OUT_OF_PLACE);
+		PlanFFT_ACC(Field<compType>* rfield, Field<compType>*  kfield,const int mem_type = FFT_OUT_OF_PLACE);
 		/*!
          initialization for complex to complex tranform.
          For more detail see the QuickStart guide.
@@ -59,7 +59,7 @@ class PlanFFT_CPU
          \param kfield : fourier space field
          \param mem_type : memory type (FFT_OUT_OF_PLACE or FFT_IN_PLACE). In place mean that both fourier and real space field point to the same data array.
          */
-		PlanFFT_CPU(Field<double>* rfield, Field<compType>*  kfield,const int mem_type = FFT_OUT_OF_PLACE);
+		PlanFFT_ACC(Field<double>* rfield, Field<compType>*  kfield,const int mem_type = FFT_OUT_OF_PLACE);
         /*!
          initialization for real to complex tranform.
          For more detail see the QuickStart guide.
@@ -75,11 +75,11 @@ class PlanFFT_CPU
 		
 #ifdef SINGLE		
 		
-		PlanFFT_CPU(Field<compType>* rfield, Field<compType>*  kfield,const int mem_type = FFT_OUT_OF_PLACE);
+		PlanFFT_ACC(Field<compType>* rfield, Field<compType>*  kfield,const int mem_type = FFT_OUT_OF_PLACE);
 		void initialize(Field<compType> * rfield,Field<compType> * kfield,const int mem_type = FFT_OUT_OF_PLACE);
 		
 		
-		PlanFFT_CPU(Field<float>* rfield, Field<compType>*  kfield,const int mem_type = FFT_OUT_OF_PLACE);
+		PlanFFT_ACC(Field<float>* rfield, Field<compType>*  kfield,const int mem_type = FFT_OUT_OF_PLACE);
 		void initialize(Field<float>*  rfield,Field<compType>*   kfield,const int mem_type = FFT_OUT_OF_PLACE);
 		
 		
@@ -134,7 +134,18 @@ class PlanFFT_CPU
 		fftwf_plan bPlan_j_;
 		fftwf_plan bPlan_j_real_;
 		fftwf_plan bPlan_k_;
-		
+	
+
+                cufftHandle cufPlan_i_;
+		cufftHandle cufPlan_j_;
+		cufftHandle cufPlan_k_;
+		cufftHandle cufPlan_k_real_;
+	
+                cufftHandle cubPlan_i_;
+		cufftHandle cubPlan_j_;
+		cufftHandle cubPlan_j_real_;
+		cufftHandle cubPlan_k_;
+	
 		///transpostion fonction
 		
 		/// forward real to complex
@@ -173,6 +184,16 @@ class PlanFFT_CPU
 		fftw_plan bPlan_j_;
 		fftw_plan bPlan_j_real_;
 		fftw_plan bPlan_k_;
+
+                cufftHandle cufPlan_i_;
+		cufftHandle cufPlan_j_;
+		cufftHandle cufPlan_k_;
+		cufftHandle cufPlan_k_real_;
+	
+                cufftHandle cubPlan_i_;
+		cufftHandle cubPlan_j_;
+		cufftHandle cubPlan_j_real_;
+		cufftHandle cubPlan_k_;
 		
 		///transpostion fonction
 		
@@ -200,17 +221,17 @@ class PlanFFT_CPU
 
 //constants
 template<class compType>
-bool PlanFFT_CPU<compType>::initialized = true;
+bool PlanFFT_ACC<compType>::initialized = true;
 template<class compType>
-bool PlanFFT_CPU<compType>::R2C=false;
+bool PlanFFT_ACC<compType>::R2C=false;
 template<class compType>
-bool PlanFFT_CPU<compType>::C2C=true;
+bool PlanFFT_ACC<compType>::C2C=true;
 
 
 
 
 template<class compType>
-PlanFFT_CPU<compType>::PlanFFT_CPU()
+PlanFFT_ACC<compType>::PlanFFT_ACC()
 {
 	status_ = false;
 }
@@ -221,14 +242,14 @@ PlanFFT_CPU<compType>::PlanFFT_CPU()
 
 
 template<class compType>
-PlanFFT_CPU<compType>::PlanFFT_CPU(Field<compType>*  rfield,Field<compType>* kfield,const int mem_type)
+PlanFFT_ACC<compType>::PlanFFT_ACC(Field<compType>*  rfield,Field<compType>* kfield,const int mem_type)
 {
 	status_ = false;
 	initialize(rfield,kfield,mem_type);
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*  kfield,const int mem_type )
+void PlanFFT_ACC<compType>::initialize(Field<compType>*  rfield,Field<compType>*  kfield,const int mem_type )
 {
 	type_ = C2C;
 	mem_type_=mem_type;
@@ -236,8 +257,8 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 	//general variable
 	if(rfield->components() != kfield->components())
 	{
-		cerr<<"Latfield2d::PlanFFT_CPU::initialize : fft curently work only for fields with same number of components"<<endl;
-		cerr<<"Latfield2d::PlanFFT_CPU::initialize : coordinate and fourier space fields have not the same number of components"<<endl;
+		cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for fields with same number of components"<<endl;
+		cerr<<"Latfield2d::PlanFFT_ACC::initialize : coordinate and fourier space fields have not the same number of components"<<endl;
 		cerr<<"Latfield2d : Abort Process Requested"<<endl;
 		
 	}
@@ -265,8 +286,8 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 	{
 		if(parallel.isRoot())
 		{
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : fft curently work only for 3d cubic lattice"<<endl;
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : real lattice have not 3 dimensions"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for 3d cubic lattice"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : real lattice have not 3 dimensions"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
 			
 		}
@@ -278,8 +299,8 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 	{
 		if(parallel.isRoot())
 		{
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : fft curently work only for 3d cubic lattice"<<endl;
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : real lattice is not cubic"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for 3d cubic lattice"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : real lattice is not cubic"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
 			
  		}
@@ -298,9 +319,13 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 	bPlan_k_ = fftwf_plan_many_dft(1,&rSize_[0],rSizeLocal_[1] ,kData_,NULL,components_, rJump_[1]*components_,temp_,NULL,rSizeLocal_[1]*rSizeLocal_[2],1,FFTW_BACKWARD,FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
 	bPlan_j_ = fftwf_plan_many_dft(1,&rSize_[0],rSizeLocal_[1]*rSizeLocal_[2],temp_,NULL,rSizeLocal_[1]*rSizeLocal_[2],1,temp_,NULL,rSizeLocal_[1]*rSizeLocal_[2],1,FFTW_BACKWARD,FFTW_ESTIMATE); 
 	bPlan_i_ = fftwf_plan_many_dft(1,&rSize_[0],rSizeLocal_[1] ,temp_,NULL,rSizeLocal_[1]*rSizeLocal_[2],1,kData_,NULL,components_, rJump_[1]*components_,FFTW_BACKWARD,FFTW_ESTIMATE);
-    
+  /* 
+cufftPlanMany(&plan, RANK, NX, &iembed, istride, idist, &oembed, ostride, odist, CUFFT_C2C, BATCH);
+fftw_plan fftw_plan_dft(int rank, const int *n, fftw_complex *in, fftw_complex *out, int sign, unsigned flags);
+ 
+	cufftPlanMany(&cufPlan_i,1,&rSize_[0],rSizeLocal_[1] ,cData_,NULL,components_, rJump_[1]*components_,temp_,NULL,rSizeLocal_[1]*rSizeLocal_[2],1,FFTW_FORWARD,FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
 	//allocation of field
-	
+*/	
 	long rfield_size = rfield->lattice().sitesLocalGross();
 	long kfield_size = kfield->lattice().sitesLocalGross(); 
 	
@@ -333,14 +358,14 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 }
 
 template<class compType>
-PlanFFT_CPU<compType>::PlanFFT_CPU(Field<float>* rfield, Field<compType>*  kfield,const int mem_type )
+PlanFFT_ACC<compType>::PlanFFT_ACC(Field<float>* rfield, Field<compType>*  kfield,const int mem_type )
 {
 	status_ = false;
 	initialize(rfield,kfield,mem_type);
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::initialize(Field<float>*  rfield,Field<compType>*   kfield,const int mem_type )
+void PlanFFT_ACC<compType>::initialize(Field<float>*  rfield,Field<compType>*   kfield,const int mem_type )
 {
 	type_ = R2C;
 	mem_type_=mem_type;
@@ -348,8 +373,8 @@ void PlanFFT_CPU<compType>::initialize(Field<float>*  rfield,Field<compType>*   
 	//general variable
 	if(rfield->components() != kfield->components())
 	{
-		cerr<<"Latfield2d::PlanFFT_CPU::initialize : fft curently work only for fields with same number of components"<<endl;
-		cerr<<"Latfield2d::PlanFFT_CPU::initialize : coordinate and fourier space fields have not the same number of components"<<endl;
+		cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for fields with same number of components"<<endl;
+		cerr<<"Latfield2d::PlanFFT_ACC::initialize : coordinate and fourier space fields have not the same number of components"<<endl;
 		cerr<<"Latfield2d : Abort Process Requested"<<endl;
 		
 	}
@@ -389,8 +414,8 @@ void PlanFFT_CPU<compType>::initialize(Field<float>*  rfield,Field<compType>*   
 	{
 		if(parallel.isRoot())
 		{
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : fft curently work only for 3d cubic lattice"<<endl;
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : real lattice have not 3 dimensions"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for 3d cubic lattice"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : real lattice have not 3 dimensions"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
 			
 		}
@@ -403,8 +428,8 @@ void PlanFFT_CPU<compType>::initialize(Field<float>*  rfield,Field<compType>*   
 	{
 		if(parallel.isRoot())
 		{
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : fft curently work only for 3d cubic lattice"<<endl;
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : real lattice is not cubic"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for 3d cubic lattice"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : real lattice is not cubic"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
 			
 		}
@@ -466,14 +491,14 @@ void PlanFFT_CPU<compType>::initialize(Field<float>*  rfield,Field<compType>*   
 #ifndef SINGLE
 
 template<class compType>
-PlanFFT_CPU<compType>::PlanFFT_CPU(Field<compType>*  rfield,Field<compType>* kfield,const int mem_type)
+PlanFFT_ACC<compType>::PlanFFT_ACC(Field<compType>*  rfield,Field<compType>* kfield,const int mem_type)
 {
 	status_ = false;
 	initialize(rfield,kfield,mem_type);
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*  kfield,const int mem_type )
+void PlanFFT_ACC<compType>::initialize(Field<compType>*  rfield,Field<compType>*  kfield,const int mem_type )
 {
 	type_ = C2C;
 	mem_type_=mem_type;
@@ -481,8 +506,8 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 	//general variable
 	if(rfield->components() != kfield->components())
 	{
-		cerr<<"Latfield2d::PlanFFT_CPU::initialize : fft curently work only for fields with same number of components"<<endl;
-		cerr<<"Latfield2d::PlanFFT_CPU::initialize : coordinate and fourier space fields have not the same number of components"<<endl;
+		cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for fields with same number of components"<<endl;
+		cerr<<"Latfield2d::PlanFFT_ACC::initialize : coordinate and fourier space fields have not the same number of components"<<endl;
 		cerr<<"Latfield2d : Abort Process Requested"<<endl;
 		
 	}
@@ -510,8 +535,8 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 	{
 		if(parallel.isRoot())
 		{
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : fft curently work only for 3d cubic lattice"<<endl;
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : real lattice have not 3 dimensions"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for 3d cubic lattice"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : real lattice have not 3 dimensions"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
 			
 		}
@@ -523,8 +548,8 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 	{
 		if(parallel.isRoot())
 		{
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : fft curently work only for 3d cubic lattice"<<endl;
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : real lattice is not cubic"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for 3d cubic lattice"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : real lattice is not cubic"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
 			
  		}
@@ -533,7 +558,8 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
     
 	//initialization of fftw plan
     
-    
+// FFTW_PLANS   
+ 
 	//Forward plan
 	fPlan_i_ = fftw_plan_many_dft(1,&rSize_[0],rSizeLocal_[1] ,cData_,NULL,components_, rJump_[1]*components_,temp_,NULL,rSizeLocal_[1]*rSizeLocal_[2],1,FFTW_FORWARD,FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
 	fPlan_j_ = fftw_plan_many_dft(1,&rSize_[0],rSizeLocal_[1]*rSizeLocal_[2],temp_,NULL,rSizeLocal_[1]*rSizeLocal_[2],1,temp_,NULL,rSizeLocal_[1]*rSizeLocal_[2],1,FFTW_FORWARD,FFTW_ESTIMATE); 
@@ -581,7 +607,7 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 
 
 template<class compType>
-PlanFFT_CPU<compType>::PlanFFT_CPU(Field<double>* rfield, Field<compType>*  kfield,const int mem_type )
+PlanFFT_ACC<compType>::PlanFFT_ACC(Field<double>* rfield, Field<compType>*  kfield,const int mem_type )
 {
 	status_ = false;
 	initialize(rfield,kfield,mem_type);
@@ -590,7 +616,7 @@ PlanFFT_CPU<compType>::PlanFFT_CPU(Field<double>* rfield, Field<compType>*  kfie
 
 
 template<class compType>
-void PlanFFT_CPU<compType>::initialize(Field<double>*  rfield,Field<compType>*   kfield,const int mem_type )
+void PlanFFT_ACC<compType>::initialize(Field<double>*  rfield,Field<compType>*   kfield,const int mem_type )
 {
 	type_ = R2C;
 	mem_type_=mem_type;
@@ -598,8 +624,8 @@ void PlanFFT_CPU<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 	//general variable
 	if(rfield->components() != kfield->components())
 	{
-		cerr<<"Latfield2d::PlanFFT_CPU::initialize : fft curently work only for fields with same number of components"<<endl;
-		cerr<<"Latfield2d::PlanFFT_CPU::initialize : coordinate and fourier space fields have not the same number of components"<<endl;
+		cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for fields with same number of components"<<endl;
+		cerr<<"Latfield2d::PlanFFT_ACC::initialize : coordinate and fourier space fields have not the same number of components"<<endl;
 		cerr<<"Latfield2d : Abort Process Requested"<<endl;
 		
 	}
@@ -639,8 +665,8 @@ void PlanFFT_CPU<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 	{
 		if(parallel.isRoot())
 		{
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : fft curently work only for 3d cubic lattice"<<endl;
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : real lattice have not 3 dimensions"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for 3d cubic lattice"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : real lattice have not 3 dimensions"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
 			
 		}
@@ -653,8 +679,8 @@ void PlanFFT_CPU<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 	{
 		if(parallel.isRoot())
 		{
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : fft curently work only for 3d cubic lattice"<<endl;
-			cerr<<"Latfield2d::PlanFFT_CPU::initialize : real lattice is not cubic"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for 3d cubic lattice"<<endl;
+			cerr<<"Latfield2d::PlanFFT_ACC::initialize : real lattice is not cubic"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
 			
 		}
@@ -716,7 +742,7 @@ void PlanFFT_CPU<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 #endif
 
 template<class compType>
-void PlanFFT_CPU<compType>::execute(int fft_type)
+void PlanFFT_ACC<compType>::execute(int fft_type)
 {
     temp_  = tempMemory.temp1();
 	temp1_ = tempMemory.temp2();
@@ -1223,7 +1249,7 @@ void PlanFFT_CPU<compType>::execute(int fft_type)
 
 /////
 template<class compType>
-void PlanFFT_CPU<compType>::transpose_0_2( fftwf_complex * in, fftwf_complex * out,int dim_i,int dim_j ,int dim_k)
+void PlanFFT_ACC<compType>::transpose_0_2( fftwf_complex * in, fftwf_complex * out,int dim_i,int dim_j ,int dim_k)
 {
 	int i,j,k;
 	for(i=0;i<dim_i;i++)
@@ -1243,7 +1269,7 @@ void PlanFFT_CPU<compType>::transpose_0_2( fftwf_complex * in, fftwf_complex * o
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::transpose_0_2_last_proc( fftwf_complex * in, fftwf_complex * out,int dim_i,int dim_j ,int dim_k)
+void PlanFFT_ACC<compType>::transpose_0_2_last_proc( fftwf_complex * in, fftwf_complex * out,int dim_i,int dim_j ,int dim_k)
 {
 	int i,j,k;
 	for(i=0;i<dim_i;i++)
@@ -1260,7 +1286,7 @@ void PlanFFT_CPU<compType>::transpose_0_2_last_proc( fftwf_complex * in, fftwf_c
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::implement_local_0_last_proc( fftwf_complex * in, fftwf_complex * out,int proc_dim_i,int proc_dim_j,int proc_dim_k,int proc_size)
+void PlanFFT_ACC<compType>::implement_local_0_last_proc( fftwf_complex * in, fftwf_complex * out,int proc_dim_i,int proc_dim_j,int proc_dim_k,int proc_size)
 {
 	int i_in,i_out,j,rank;
 	for(i_in=0;i_in<proc_dim_i;i_in++)
@@ -1279,7 +1305,7 @@ void PlanFFT_CPU<compType>::implement_local_0_last_proc( fftwf_complex * in, fft
 
 
 template<class compType>
-void PlanFFT_CPU<compType>::transpose_1_2(fftwf_complex * in , fftwf_complex * out ,int dim_i,int dim_j ,int dim_k )
+void PlanFFT_ACC<compType>::transpose_1_2(fftwf_complex * in , fftwf_complex * out ,int dim_i,int dim_j ,int dim_k )
 {
 	int i,j,k;
 	for(i=0;i<dim_i;i++)
@@ -1296,7 +1322,7 @@ void PlanFFT_CPU<compType>::transpose_1_2(fftwf_complex * in , fftwf_complex * o
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::transpose_back_0_3( fftwf_complex * in, fftwf_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size,int halo,int components, int comp)
+void PlanFFT_ACC<compType>::transpose_back_0_3( fftwf_complex * in, fftwf_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size,int halo,int components, int comp)
 {
 	int i,j,k,l, i_t, j_t, k_t;
 	int r2c_halo = r2c + 2*halo;
@@ -1321,7 +1347,7 @@ void PlanFFT_CPU<compType>::transpose_back_0_3( fftwf_complex * in, fftwf_comple
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::implement_0(fftwf_complex * in, fftwf_complex * out,int r2c_size,int local_size_j,int local_size_k, int halo,int components, int comp)
+void PlanFFT_ACC<compType>::implement_0(fftwf_complex * in, fftwf_complex * out,int r2c_size,int local_size_j,int local_size_k, int halo,int components, int comp)
 {
 	int i,j,k;
 	i=r2c_size-1;
@@ -1341,7 +1367,7 @@ void PlanFFT_CPU<compType>::implement_0(fftwf_complex * in, fftwf_complex * out,
 
 
 template<class compType>
-void PlanFFT_CPU<compType>::b_arrange_data_0(fftwf_complex *in, fftwf_complex * out,int dim_i,int dim_j ,int dim_k, int khalo, int components, int comp)
+void PlanFFT_ACC<compType>::b_arrange_data_0(fftwf_complex *in, fftwf_complex * out,int dim_i,int dim_j ,int dim_k, int khalo, int components, int comp)
 {
 	int i,j,k;
 	int jump_i=(dim_i+ 2 *khalo);
@@ -1361,7 +1387,7 @@ void PlanFFT_CPU<compType>::b_arrange_data_0(fftwf_complex *in, fftwf_complex * 
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::b_transpose_back_0_1( fftwf_complex * in, fftwf_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size)
+void PlanFFT_ACC<compType>::b_transpose_back_0_1( fftwf_complex * in, fftwf_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size)
 {
 	int i,j,k,l, i_t, j_t, k_t;
 	
@@ -1385,7 +1411,7 @@ void PlanFFT_CPU<compType>::b_transpose_back_0_1( fftwf_complex * in, fftwf_comp
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::b_implement_0(fftwf_complex * in, fftwf_complex * out,int r2c_size,int local_size_j,int local_size_k)
+void PlanFFT_ACC<compType>::b_implement_0(fftwf_complex * in, fftwf_complex * out,int r2c_size,int local_size_j,int local_size_k)
 {
 	int i,j,k;
 	i=r2c_size-1;
@@ -1409,7 +1435,7 @@ void PlanFFT_CPU<compType>::b_implement_0(fftwf_complex * in, fftwf_complex * ou
 
 /////
 template<class compType>
-void PlanFFT_CPU<compType>::transpose_0_2( fftw_complex * in, fftw_complex * out,int dim_i,int dim_j ,int dim_k)
+void PlanFFT_ACC<compType>::transpose_0_2( fftw_complex * in, fftw_complex * out,int dim_i,int dim_j ,int dim_k)
 {
 	int i,j,k;
 	for(i=0;i<dim_i;i++)
@@ -1429,7 +1455,7 @@ void PlanFFT_CPU<compType>::transpose_0_2( fftw_complex * in, fftw_complex * out
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::transpose_0_2_last_proc( fftw_complex * in, fftw_complex * out,int dim_i,int dim_j ,int dim_k)
+void PlanFFT_ACC<compType>::transpose_0_2_last_proc( fftw_complex * in, fftw_complex * out,int dim_i,int dim_j ,int dim_k)
 {
 	int i,j,k;
 	for(i=0;i<dim_i;i++)
@@ -1446,7 +1472,7 @@ void PlanFFT_CPU<compType>::transpose_0_2_last_proc( fftw_complex * in, fftw_com
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::implement_local_0_last_proc( fftw_complex * in, fftw_complex * out,int proc_dim_i,int proc_dim_j,int proc_dim_k,int proc_size)
+void PlanFFT_ACC<compType>::implement_local_0_last_proc( fftw_complex * in, fftw_complex * out,int proc_dim_i,int proc_dim_j,int proc_dim_k,int proc_size)
 {
 	int i_in,i_out,j,rank;
 	for(i_in=0;i_in<proc_dim_i;i_in++)
@@ -1465,7 +1491,7 @@ void PlanFFT_CPU<compType>::implement_local_0_last_proc( fftw_complex * in, fftw
 
 
 template<class compType>
-void PlanFFT_CPU<compType>::transpose_1_2(fftw_complex * in , fftw_complex * out ,int dim_i,int dim_j ,int dim_k )
+void PlanFFT_ACC<compType>::transpose_1_2(fftw_complex * in , fftw_complex * out ,int dim_i,int dim_j ,int dim_k )
 {
 	int i,j,k;
 	for(i=0;i<dim_i;i++)
@@ -1482,7 +1508,7 @@ void PlanFFT_CPU<compType>::transpose_1_2(fftw_complex * in , fftw_complex * out
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::transpose_back_0_3( fftw_complex * in, fftw_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size,int halo,int components, int comp)
+void PlanFFT_ACC<compType>::transpose_back_0_3( fftw_complex * in, fftw_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size,int halo,int components, int comp)
 {
 	int i,j,k,l, i_t, j_t, k_t;
 	int r2c_halo = r2c + 2*halo;
@@ -1507,7 +1533,7 @@ void PlanFFT_CPU<compType>::transpose_back_0_3( fftw_complex * in, fftw_complex 
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::implement_0(fftw_complex * in, fftw_complex * out,int r2c_size,int local_size_j,int local_size_k, int halo,int components, int comp)
+void PlanFFT_ACC<compType>::implement_0(fftw_complex * in, fftw_complex * out,int r2c_size,int local_size_j,int local_size_k, int halo,int components, int comp)
 {
 	int i,j,k;
 	i=r2c_size-1;
@@ -1527,7 +1553,7 @@ void PlanFFT_CPU<compType>::implement_0(fftw_complex * in, fftw_complex * out,in
 
 
 template<class compType>
-void PlanFFT_CPU<compType>::b_arrange_data_0(fftw_complex *in, fftw_complex * out,int dim_i,int dim_j ,int dim_k, int khalo, int components, int comp)
+void PlanFFT_ACC<compType>::b_arrange_data_0(fftw_complex *in, fftw_complex * out,int dim_i,int dim_j ,int dim_k, int khalo, int components, int comp)
 {
 	int i,j,k;
 	int jump_i=(dim_i+ 2 *khalo);
@@ -1547,7 +1573,7 @@ void PlanFFT_CPU<compType>::b_arrange_data_0(fftw_complex *in, fftw_complex * ou
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::b_transpose_back_0_1( fftw_complex * in, fftw_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size)
+void PlanFFT_ACC<compType>::b_transpose_back_0_1( fftw_complex * in, fftw_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size)
 {
 	int i,j,k,l, i_t, j_t, k_t;
 	
@@ -1571,7 +1597,7 @@ void PlanFFT_CPU<compType>::b_transpose_back_0_1( fftw_complex * in, fftw_comple
 }
 
 template<class compType>
-void PlanFFT_CPU<compType>::b_implement_0(fftw_complex * in, fftw_complex * out,int r2c_size,int local_size_j,int local_size_k)
+void PlanFFT_ACC<compType>::b_implement_0(fftw_complex * in, fftw_complex * out,int r2c_size,int local_size_j,int local_size_k)
 {
 	int i,j,k;
 	i=r2c_size-1;
