@@ -2,14 +2,18 @@ test -s ~/.alias && . ~/.alias || true
 
 if [[ $HOSTNAME != ela* ]]; then
 
-	#modules
-	module swap PrgEnv-cray/5.2.40 PrgEnv-pgi/5.2.40
-	module load craype-accel-nvidia35
-	module load cudatoolkit/6.5.14-1.0502.9613.6.1
-	module load fftw
+        #modules
+        module load craype-accel-nvidia35
+        module load cudatoolkit/6.5.14-1.0502.9613.6.1
+        module load fftw
 
-	#pgi
-	export PATH=/users/hck28/pgi/linux86-64/15.5/bin:$PATH
+        #pgi
+        export PGI=/users/hck28/pgi/linux86-64/15.5
+        export PATH=${PGI}/bin:$PATH
+        export LD_LIBRARY_PATH=${PGI}/lib:$LD_LIBRARY_PATH
+        export CC=pgCC
+        export FC=pgf90
+
 fi
 
 #terminal
