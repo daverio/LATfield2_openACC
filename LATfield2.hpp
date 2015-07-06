@@ -85,7 +85,7 @@ namespace LATfield2
 	#include "LATfield2_PlanFFT_CPU.hpp"
 	#endif
     #ifdef FFT3D_ACC
-    #include "LATfield2_PlanFFT_ACC.hpp"
+    #include "LATfield2_PlanFFT_ACC_test.hpp"
     #endif
 }
 

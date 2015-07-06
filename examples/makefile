@@ -13,3 +13,7 @@ DEF          := $(DEF_LATFIEILD)
 
 $(EXEC): $(SOURCE) $(HEADER) makefile
 	$(COMPILER) $(SOURCE) $(INC) $(DEF) $(LIB) $(OPT) -o $(EXEC)
+
+
+poisson: poissonSolver.cpp $(HEADER) makefile
+	$(COMPILER) poissonSolver.cpp  $(INC) $(DEF) $(LIB) $(OPT) -o poisson

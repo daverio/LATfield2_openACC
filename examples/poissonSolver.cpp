@@ -85,7 +85,6 @@ int main(int argc, char **argv)
         x2 += pow(0.5l + x.coord(2) - lat.size(2)/2,2);
         rho(x)= 1.0 * exp(-x2/sigma2);
     }
-    phi.updateHalo();
     
     
     planRho.execute(FFT_FORWARD);
@@ -107,6 +106,8 @@ int main(int argc, char **argv)
     
     planPhi.execute(FFT_BACKWARD);
     
+    phi.updateHalo();
+
     for(x.first();x.test();x.next())
     {
         rhoVerif(x) =  (phi(x+0) - 2 * phi(x) + phi(x-0))/res2;

@@ -1,0 +1,21 @@
+test -s ~/.alias && . ~/.alias || true
+
+if [[ $HOSTNAME != ela* ]]; then
+
+	#modules
+	module swap PrgEnv-cray/5.2.40 PrgEnv-pgi/5.2.40
+	module load craype-accel-nvidia35
+	module load cudatoolkit/6.5.14-1.0502.9613.6.1
+	module load fftw
+
+	#pgi
+	export PATH=/users/hck28/pgi/linux86-64/15.5/bin:$PATH
+fi
+
+#terminal
+PS1='\[\e[0;32m\]\u\[\e[m\]@\h \[\e[1;34m\]\w\[\e[m\] \[\e[1;32m\]\$\[\e[m\] \[\e[1;37m\]'
+export LANG="en_US.UTF-8"
+export LC_COLLATE="en_US.UTF-8"
+
+#editors
+export EDITOR=vi
