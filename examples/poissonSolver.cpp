@@ -133,7 +133,7 @@ int main(int argc, char **argv)
     
     for(x.first();x.test();x.next())
     {
-        error =  (abs( rho(x)- (mean + rhoVerif(x)/renormFFT) ) ) / abs(rho(x));
+        error =  (fabs( rho(x)- (mean + rhoVerif(x)/renormFFT) ) ) / fabs(rho(x));
         averageError+=error;        
         if(minError>error)minError=error;
         if(maxError<error)maxError=error;
@@ -150,5 +150,11 @@ int main(int argc, char **argv)
     
     COUT<<"Min error: "<<minError<<", Max error: "<<maxError<<" , Average error: "<<averageError<<endl;
     
-    
+#ifdef SINGLE
+#define TOLERANCE 1.0e-6
+#else
+#define TOLERANCE 1.0e-11
+#endif
+    if (maxError > TOLERANCE) exit(1 + (int) fabs(log10(maxError)));
+    else exit(0);
 }
