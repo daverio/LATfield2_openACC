@@ -80,7 +80,7 @@ namespace LATfield2
 #include "LATfield2_FFT_tempMem.hpp"
     
     temporaryMemFFT tempMemory;
-#endif;
+#endif
 	#ifdef FFT3D
 	#include "LATfield2_PlanFFT_CPU.hpp"
 	#endif
