@@ -1,0 +1,3 @@
+module load fftw
+module load PrgEnv-pgi
+module load craype-accel-nvidia35
