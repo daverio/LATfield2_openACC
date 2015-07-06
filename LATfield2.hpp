@@ -32,7 +32,8 @@
 
 
 #ifdef FFT3D_ACC
-#include "fftw3.h"
+#include "cufft.h"
+#include "cufftw.h"
 
 #ifdef ACC_MIC
 //mic fft library..

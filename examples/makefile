@@ -17,3 +17,6 @@ $(EXEC): $(SOURCE) $(HEADER) makefile
 
 poisson: poissonSolver.cpp $(HEADER) makefile
 	$(COMPILER) poissonSolver.cpp  $(INC) $(DEF) $(LIB) $(OPT) -o poisson
+
+clean:	
+	rm -f poisson $(EXEC) *.o *~
