@@ -4,8 +4,9 @@ COMPILER                  := CC
 OPT                       := -std=c++11  -O3 -acc -Minfo=accel -ta=tesla:cc35 -w
 #OPT                       :=
 INC                       := -I./../
-LIB                       := -lfftw3 -lm
-DEF_LATFIEILD             := -DFFT3D
+#LIB                       := -lfftw3 -lm
+LIB			  := -L/opt/nvidia/cudatoolkit6.5/default/lib64/
+DEF_LATFIEILD             := -DFFT3D_ACC
 DEF                       := $(DEF_LATFIEILD)
 TEST_WITH_EVERY_BUILD     := true
 
