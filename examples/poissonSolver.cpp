@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     int khalo =0;
     int dim = 3;
     int comp = 1;
-    double sigma2=0.5;
+    double sigma2=1.0;
     double res =0.5;
     
     
@@ -78,6 +78,8 @@ int main(int argc, char **argv)
     //fill rho with a gaussian:
     
     double mean = 0.;
+
+    sigma2 = BoxSize*BoxSize/9.;
     
     for(x.first();x.test();x.next())
     {
