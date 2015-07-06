@@ -77,15 +77,19 @@ int main(int argc, char **argv)
     
     //fill rho with a gaussian:
     
+    double mean = 0.;
     
     for(x.first();x.test();x.next())
     {
         double x2 = pow(0.5l + x.coord(0) - lat.size(0)/2,2);
         x2 += pow(0.5l + x.coord(1) - lat.size(1)/2,2);
         x2 += pow(0.5l + x.coord(2) - lat.size(2)/2,2);
-        rho(x)= 1.0 * exp(-x2/sigma2);
+        rho(x)= 1.0 * exp(-x2/sigma2) + 0.1;
+	mean += rho(x);
     }
     
+    parallel.sum(mean);
+    mean /= (double) lat.sites();
     
     planRho.execute(FFT_FORWARD);
     
@@ -127,7 +131,7 @@ int main(int argc, char **argv)
     
     for(x.first();x.test();x.next())
     {
-        error =  (abs( rho(x)- ( rhoVerif(x)/renormFFT) ) ) / abs(rhoVerif(x));
+        error =  (abs( rho(x)- (mean + rhoVerif(x)/renormFFT) ) ) / abs(rho(x));
         averageError+=error;        
         if(minError>error)minError=error;
         if(maxError<error)maxError=error;
