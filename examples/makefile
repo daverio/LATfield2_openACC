@@ -2,7 +2,7 @@ EXEC         := fft_test
 SOURCE       := fft.cpp
 HEADER       :=  $(wildcard ../*.hpp) $(wildcard LATfield2d/*.h)
 COMPILER     := CC
-OPT          := -std=c++11  -O3 -acc -Minfo=accel -ta=tesla:cc35
+OPT          := -std=c++11  -O3 -acc -Minfo=accel -ta=tesla:cc35 -w
 INC          := -I./../
 LIB          := -lfftw3 -lm
 DEF_LATFIEILD:= -DFFT3D
@@ -13,3 +13,7 @@ DEF          := $(DEF_LATFIEILD)
 
 $(EXEC): $(SOURCE) $(HEADER) makefile
 	$(COMPILER) $(SOURCE) $(INC) $(DEF) $(LIB) $(OPT) -o $(EXEC)
+
+
+poisson: poissonSolver.cpp $(HEADER) makefile
+	$(COMPILER) poissonSolver.cpp  $(INC) $(DEF) $(LIB) $(OPT) -o poisson
