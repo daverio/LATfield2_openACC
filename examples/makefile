@@ -1,5 +1,5 @@
 #---------------- parameters -----------------------------------------------#
-EXEC                      := poisson fft_test
+EXEC                      := poisson #fft_test
 TEST_WITH_EVERY_BUILD     := true
 COMPILER                  := CC
 INC                       := -I./../
