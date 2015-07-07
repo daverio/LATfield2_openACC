@@ -5,8 +5,8 @@ set -e
 script_dir="$( cd "$(dirname "$0")" ; pwd -P )"
 
 #parameters
-n_proc=2
-m_proc=2
+n_proc=4
+m_proc=4
 
 function run_test {
 	echo "Running $1 with problem size $2"
