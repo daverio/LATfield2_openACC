@@ -17,8 +17,12 @@ function run_test {
 total_proc=`expr $n_proc \* $m_proc`
 
 #run tests
-run_test fft_test 64
-run_test poisson 64
-run_test fft_test 128
-run_test poisson 128
+# run_test fft_test_cpu 64
+run_test poisson_cpu 64
+# run_test fft_test_cpu 128
+run_test poisson_cpu 128
+# run_test fft_test_openacc 64
+# run_test poisson_openacc 64
+# run_test fft_test_openacc 128
+# run_test poisson_openacc 128
 echo "All tests passed"

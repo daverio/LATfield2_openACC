@@ -1,41 +1,51 @@
+#---------------- parameters -----------------------------------------------#
 EXEC                      := poisson fft_test
-HEADER                    := $(wildcard ../*.hpp) $(wildcard LATfield2d/*.h)
+TEST_WITH_EVERY_BUILD     := true
 COMPILER                  := CC
-ifdef DEBUG
-OPT                       :=
-CFLAG                     := -g -std=c++11 -w -Mbounds -traceback
-else
-OPT                       := -O3 -acc -Minfo=accel -ta=tesla:cc35 -w
-CFLAG                     := -std=c++11 -w
-endif
 INC                       := -I./../
 #LIB                       := -lfftw3 -lm
 LIB			              := -L/opt/nvidia/cudatoolkit6.5/default/lib64/
 DEF_LATFIEILD             := -DFFT3D_ACC
-DEF                       := $(DEF_LATFIEILD)
-TEST_WITH_EVERY_BUILD     := true
+ifdef DEBUG
+OPT_OPENACC               :=
+OPT_CPU                   :=
+CFLAG                     := -g -std=c++11 -Mbounds -traceback -w
+else
+OPT_OPENACC               := -O3 -acc -Minfo=accel -ta=tesla:cc35
+OPT_CPU                   := -O3
+CFLAG                     := -std=c++11 -w
+endif
 
+#---------------- setup -----------------------------------------------------#
+HEADER                    := $(wildcard ../*.hpp) $(wildcard LATfield2d/*.h)
+EXEC_CPU                  := $(addsuffix _cpu,$(EXEC))
+EXEC_OPENACC              := $(addsuffix _openacc,$(EXEC))
+DEF                       := $(DEF_LATFIEILD)
 ifeq ($(TEST_WITH_EVERY_BUILD),true)
 ADDITIONAL_BUILD_TARGETS=tests
 else
 ADDITIONAL_BUILD_TARGETS
 endif
-
 .PHONY: all tests clean openacc cpu
 
+#---------------- target build rules ----------------------------------------#
 #mpic++ main.cpp -I./LATfield2d -I../local/include/gsl/  -DFFT3D -DPHINONLINEAR -DCHECK_B -lfftw3 -lm -lhdf5 -lgsl -lgslcblas -std\
 # =c++0x -O3  -o test
 
-all: ${EXEC} ${ADDITIONAL_BUILD_TARGETS}
+all: openacc cpu ${ADDITIONAL_BUILD_TARGETS}
 
-tests: ${EXEC}
+openacc: ${EXEC_OPENACC}
+
+cpu: ${EXEC_CPU}
+
+tests: ${EXEC_OPENACC} ${EXEC_CPU}
 	./RunTest.sh
 
-fft_test: fft.cpp $(HEADER) makefile
-	$(COMPILER) fft.cpp $(INC) $(DEF) $(LIB) $(OPT) $(CFLAG) -o fft_test
+%_cpu: %.cpp $(HEADER) makefile
+	$(COMPILER) $< $(INC) $(DEF) $(LIB) $(OPT_CPU) $(CFLAG) -o $@
 
-poisson: poissonSolver.cpp $(HEADER) makefile
-	$(COMPILER) poissonSolver.cpp $(INC) $(DEF) $(LIB) $(OPT) $(CFLAG) -o poisson
+%_openacc: %.cpp $(HEADER) makefile
+	$(COMPILER) $< $(INC) $(DEF) $(LIB) $(OPT_OPENACC) $(CFLAG) -o $@
 
 clean:
 	rm -f $(EXEC) *.o *~
