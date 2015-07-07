@@ -22,6 +22,7 @@ int main(int argc, char **argv)
     int comp = 1;
     int i,j,l,rnk;
     double val_re, val_im;
+    int count = 0;
 
 
     for (int i=1 ; i < argc ; i++ ){
@@ -128,12 +129,18 @@ int main(int argc, char **argv)
 			}
 			if (fabs(phiK(k).real()/lat.sites() - val_re) > TOLERANCE || fabs(phiK(k).imag()/lat.sites() - val_im) > TOLERANCE)
 			{
+#ifndef NO_OUTPUT
 				cout << " proc#" << parallel.rank() << " : " << setfill('0') << setw(3) << k.coord(0) << "-" << setfill('0') << setw(3) << k.coord(1) << "-" << setfill('0') << setw(3) << k.coord(2) << "  " << phiK(k).real() << "+" << phiK(k).imag() << "i  exceeding tolerance!" << endl;
+#endif
+				count++;
 			}
 		}
 #endif
              }
          }
     }
+    parallel.sum(count);
+
+    exit(count);
 }
 
