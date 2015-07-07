@@ -5,13 +5,13 @@ ifdef DEBUG
 OPT                       :=
 CFLAG                     := -g -std=c++11 -w -Mbounds -traceback
 else
-OPT                       := -O3
-#OPT                      := -O3 -acc -Minfo=accel -ta=tesla:cc35 -w
+OPT                       := -O3 -acc -Minfo=accel -ta=tesla:cc35 -w
 CFLAG                     := -std=c++11 -w
 endif
 INC                       := -I./../
-LIB                       := -lfftw3 -lm
-DEF_LATFIEILD             := -DFFT3D
+#LIB                       := -lfftw3 -lm
+LIB			              := -L/opt/nvidia/cudatoolkit6.5/default/lib64/
+DEF_LATFIEILD             := -DFFT3D_ACC
 DEF                       := $(DEF_LATFIEILD)
 TEST_WITH_EVERY_BUILD     := true
 
@@ -21,7 +21,7 @@ else
 ADDITIONAL_BUILD_TARGETS
 endif
 
-.PHONY: all tests clean
+.PHONY: all tests clean openacc cpu
 
 #mpic++ main.cpp -I./LATfield2d -I../local/include/gsl/  -DFFT3D -DPHINONLINEAR -DCHECK_B -lfftw3 -lm -lhdf5 -lgsl -lgslcblas -std\
 # =c++0x -O3  -o test

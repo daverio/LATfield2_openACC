@@ -32,16 +32,14 @@
 
 
 #ifdef FFT3D_ACC
-#include "cufft.h"
-#include "cufftw.h"
-
 #ifdef ACC_MIC
 //mic fft library..
 
 
 #else
 //cufft lib...
-
+#include "cufft.h"
+#include "cufftw.h"
 
 #endif
 
@@ -86,7 +84,7 @@ namespace LATfield2
 	#include "LATfield2_PlanFFT_CPU.hpp"
 	#endif
     #ifdef FFT3D_ACC
-    #include "LATfield2_PlanFFT_ACC_test.hpp"
+    #include "LATfield2_PlanFFT_ACC_fftwTest.hpp"
     #endif
 }
 
