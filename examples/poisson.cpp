@@ -117,10 +117,11 @@ int main(int argc, char **argv)
             for(long site_ix = 0; site_ix < temp_size; site_ix++)
             {
                 double x2 = pow(0.5l + temp_x_coord_0[site_ix] - half_lat_size_0,2);
-                x2 += pow(0.5l + temp_x_coord_1[site_ix] - half_lat_size_1,2);
-                x2 += pow(0.5l + temp_x_coord_2[site_ix] - half_lat_size_2,2);
-                temp_rho[site_ix]= 1.0 * exp(-x2/sigma2) + 0.1;
-            mean += temp_rho[site_ix];
+                temp_rho[site_ix] = x2;
+            //     x2 += pow(0.5l + temp_x_coord_1[site_ix] - half_lat_size_1,2);
+            //     x2 += pow(0.5l + temp_x_coord_2[site_ix] - half_lat_size_2,2);
+            //     temp_rho[site_ix]= 1.0 * exp(-x2/sigma2) + 0.1;
+            // mean += temp_rho[site_ix];
             }
         }
     }
