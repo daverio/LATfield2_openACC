@@ -9,11 +9,12 @@ DEF_LATFIEILD             := -DFFT3D_ACC
 ifdef DEBUG
 OPT_OPENACC               :=
 OPT_CPU                   :=
-CFLAG                     := -g -std=c++11 -Mbounds -traceback -w
+CFLAG                     := -g -std=c++11 -Mbounds -traceback -w --gnu
 else
 OPT_OPENACC               := -O3 -acc -Minfo=accel -ta=tesla:cc35 -VH15.7
 OPT_CPU                   := -O3
-CFLAG                     := -std=c++11 -w
+CFLAG                     := -std=c++11 -w -Y0,/users/hck60/pgi -Mqq,expand+beforeaccel,printblocks -v
+# CFLAG                     := -E
 endif
 
 #---------------- setup -----------------------------------------------------#
