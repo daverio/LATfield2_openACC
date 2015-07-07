@@ -5,18 +5,27 @@ set -e
 script_dir="$( cd "$(dirname "$0")" ; pwd -P )"
 
 #parameters
-n_proc=4
-m_proc=4
-
-#setup
-total_proc=`expr $n_proc \* $m_proc`
+n_proc_default=4
+m_proc_default=4
 
 function run_test {
-	echo "Running $1 with problem size $2"
-	aprun -n ${total_proc} ${script_dir}/$1 -n ${n_proc} -m ${m_proc} -b $2
+	exec_name=$1
+	problem_size=$2
+	n_proc=${n_proc_default}
+	m_proc=${m_proc_default}
+	if [ ! -z $3 ]; then
+		n_proc=$3
+	fi
+	if [ ! -z $4 ]; then
+		n_proc=m_proc
+	fi
+	total_proc=`expr $n_proc \* $m_proc`
+	echo "Running ${exec_name} with problem size ${problem_size}, ${n_proc} x ${m_proc} processes"
+	aprun -n ${total_proc} ${script_dir}/${exec_name} -n ${n_proc} -m ${m_proc} -b ${problem_size}
 }
 
 #run tests
+run_test gettingStarted_openacc
 # run_test fft_test_cpu 64
 # run_test poisson_cpu 64
 # run_test fft_test_cpu 128
@@ -26,6 +35,5 @@ function run_test {
 # run_test fft_test_openacc 128
 # run_test poisson_openacc 128
 run_test wave_test_openacc 16
-echo "Running wave_test_openacc with problem size 64"
-aprun -n 8 ${script_dir}/wave_test_openacc -n 2 -m 4 -b 64
+run_test wave_test_openacc 64 2 4
 echo "All tests passed"
