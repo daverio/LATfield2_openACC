@@ -10,6 +10,9 @@
 
 #include <iostream>
 #include "LATfield2.hpp"
+#ifdef _OPENACC
+#include <accelmath.h>
+#endif
 
 using namespace LATfield2;
 
@@ -81,6 +84,47 @@ int main(int argc, char **argv)
 
     sigma2 = BoxSize*BoxSize/9.;
 
+#ifdef _OPENACC
+    long temp_size = 0;
+    for(x.first();x.test();x.next())
+    {
+        temp_size += 1;
+    }
+
+    double* temp_rho = new double[temp_size];
+    double* temp_x_coord_0 = new double[temp_size];
+    double* temp_x_coord_1 = new double[temp_size];
+    double* temp_x_coord_2 = new double[temp_size];
+
+    {
+        long site_ix = 0;
+        for(x.first();x.test();x.next()) {
+            temp_x_coord_0[site_ix] = x.coord(0);
+            temp_x_coord_1[site_ix] = x.coord(1);
+            temp_x_coord_2[site_ix] = x.coord(2);
+            site_ix += 1;
+        }
+    }
+
+    {
+        COUT<<"Running with temporary data structures";
+        long half_lat_size_0 = lat.size(0)/2;
+        long half_lat_size_1 = lat.size(1)/2;
+        long half_lat_size_2 = lat.size(2)/2;
+        #pragma acc kernels
+        {
+            #pragma acc loop independent
+            for(long site_ix = 0; site_ix < temp_size; site_ix++)
+            {
+                double x2 = pow(0.5l + temp_x_coord_0[site_ix] - half_lat_size_0,2);
+                x2 += pow(0.5l + temp_x_coord_1[site_ix] - half_lat_size_1,2);
+                x2 += pow(0.5l + temp_x_coord_2[site_ix] - half_lat_size_2,2);
+                temp_rho[site_ix]= 1.0 * exp(-x2/sigma2) + 0.1;
+            mean += temp_rho[site_ix];
+            }
+        }
+    }
+#else
     for(x.first();x.test();x.next())
     {
         double x2 = pow(0.5l + x.coord(0) - lat.size(0)/2,2);
@@ -89,6 +133,20 @@ int main(int argc, char **argv)
         rho(x)= 1.0 * exp(-x2/sigma2) + 0.1;
 	mean += rho(x);
     }
+#endif
+#ifdef _OPENACC
+    {
+        long site_ix = 0;
+        for(x.first();x.test();x.next()) {
+            rho(x) = temp_rho[site_ix];
+            site_ix += 1;
+        }
+    }
+    delete [] temp_rho;
+    delete [] temp_x_coord_0;
+    delete [] temp_x_coord_1;
+    delete [] temp_x_coord_2;
+#endif
 
     parallel.sum(mean);
     mean /= (double) lat.sites();

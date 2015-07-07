@@ -3,15 +3,15 @@ EXEC                      := poisson fft_test
 TEST_WITH_EVERY_BUILD     := true
 COMPILER                  := CC
 INC                       := -I./../
-#LIB                       := -lfftw3 -lm
-LIB			              := -L/opt/nvidia/cudatoolkit6.5/default/lib64/
+LIB_OPENACC               := -L/opt/nvidia/cudatoolkit6.5/default/lib64/
+LIB_CPU                   := -lfftw3 -lm
 DEF_LATFIEILD             := -DFFT3D_ACC
 ifdef DEBUG
 OPT_OPENACC               :=
 OPT_CPU                   :=
 CFLAG                     := -g -std=c++11 -Mbounds -traceback -w
 else
-OPT_OPENACC               := -O3 -acc -Minfo=accel -ta=tesla:cc35
+OPT_OPENACC               := -O3 -acc -Minfo=accel -ta=tesla:cc35 -VH15.7
 OPT_CPU                   := -O3
 CFLAG                     := -std=c++11 -w
 endif
@@ -42,10 +42,10 @@ tests: ${EXEC_OPENACC} ${EXEC_CPU}
 	./RunTest.sh
 
 %_cpu: %.cpp $(HEADER) makefile
-	$(COMPILER) $< $(INC) $(DEF) $(LIB) $(OPT_CPU) $(CFLAG) -o $@
+	$(COMPILER) $< $(INC) $(DEF) $(LIB_CPU) $(OPT_CPU) $(CFLAG) -o $@
 
 %_openacc: %.cpp $(HEADER) makefile
-	$(COMPILER) $< $(INC) $(DEF) $(LIB) $(OPT_OPENACC) $(CFLAG) -o $@
+	$(COMPILER) $< $(INC) $(DEF) $(LIB_OPENACC) $(OPT_OPENACC) $(CFLAG) -o $@
 
 clean:
 	rm -f $(EXEC) *.o *~
