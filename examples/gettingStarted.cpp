@@ -35,13 +35,8 @@ int main(int argc, char **argv)
 
 
     //------------   Declaration of a Lattice   --------------
-    int dim = 3;
-    // PGI 15.7 won't compile this -> report to Wolfe
-    // int latSize[dim] = {25,57,32};
-    int latSize[dim];
-    latSize[0] = 25;
-    latSize[1] = 57;
-    latSize[2] = 32;
+    const int dim = 3;
+    int latSize[dim] = {25,57,32};
     int halo = 1;
     Lattice lat(dim,latSize,halo);
 
