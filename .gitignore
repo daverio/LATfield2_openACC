@@ -1,2 +1,3 @@
-poisson
-fft_test
+*_cpu
+*_openacc
+vgcore.*
