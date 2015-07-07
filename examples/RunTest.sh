@@ -8,21 +8,24 @@ script_dir="$( cd "$(dirname "$0")" ; pwd -P )"
 n_proc=4
 m_proc=4
 
+#setup
+total_proc=`expr $n_proc \* $m_proc`
+
 function run_test {
 	echo "Running $1 with problem size $2"
 	aprun -n ${total_proc} ${script_dir}/$1 -n ${n_proc} -m ${m_proc} -b $2
 }
 
-#setup
-total_proc=`expr $n_proc \* $m_proc`
-
 #run tests
 # run_test fft_test_cpu 64
-run_test poisson_cpu 64
+# run_test poisson_cpu 64
 # run_test fft_test_cpu 128
-run_test poisson_cpu 128
+# run_test poisson_cpu 128
 # run_test fft_test_openacc 64
 # run_test poisson_openacc 64
 # run_test fft_test_openacc 128
 # run_test poisson_openacc 128
+run_test wave_test_openacc 16
+echo "Running wave_test_openacc with problem size 64"
+aprun -n 8 ${script_dir}/wave_test_openacc -n 2 -m 4 -b 64
 echo "All tests passed"
