@@ -1,7 +1,7 @@
 EXEC                      := poisson fft_test
 HEADER                    := $(wildcard ../*.hpp) $(wildcard LATfield2d/*.h)
 COMPILER                  := CC
-OPT                       := -std=c++11  -O3 -acc -Minfo=accel -ta=tesla:cc35 -w
+OPT                       := -std=c++11  -O3 -acc -Minfo=accel -ta=tesla:cc35 -w -VH15.7
 #OPT                       :=
 INC                       := -I./../
 #LIB                       := -lfftw3 -lm
