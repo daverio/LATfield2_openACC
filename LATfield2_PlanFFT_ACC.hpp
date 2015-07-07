@@ -1,4 +1,3 @@
-
 #ifndef LATFIELD2_PlanFFT_ACC_HPP
 #define LATFIELD2_PlanFFT_ACC_HPP
 
@@ -26,6 +25,7 @@ class PlanFFT_ACC
         //! Constructor.
 		PlanFFT_ACC();
 		
+	    ~PlanFFT_ACC();
 #ifndef SINGLE
 		
         /*!
@@ -69,6 +69,11 @@ class PlanFFT_ACC
          */
 		void execute(int fft_type);
 
+	    void execute_r2c_forward_h2d_send();
+	    void execute_r2c_forward_d2h_send();
+	    void execute_r2c_forward_dim0();
+
+
 #endif		
         
     private:
@@ -91,8 +96,12 @@ class PlanFFT_ACC
 		int rHalo_;
 		int kHalo_;
         
-        
-        
+#ifndef SINGLE
+	    double * temp_r2c_real_;
+	    double * rData_;
+
+#endif
+	    
 
 };
 
@@ -111,6 +120,11 @@ template<class compType>
 PlanFFT_ACC<compType>::PlanFFT_ACC()
 {
 	status_ = false;
+}
+template<class compType>
+PlanFFT_ACC<compType>::~PlanFFT_ACC()
+{
+    free(temp_r2c_real_);
 }
 
 
@@ -199,6 +213,11 @@ void PlanFFT_ACC<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 		rfield->alloc();
 		kfield->alloc();
 	}
+
+	
+
+	temp_r2c_real_ = (double*)malloc(rfield->lattice().sitesLocal * sizeof(double));
+
     
     //initialization of fft planer....
     
@@ -294,12 +313,15 @@ void PlanFFT_ACC<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 		rfield->alloc();
 		kfield->alloc();
 	}
+
+
+	temp_r2c_real_ = (double*)malloc(rfield->lattice().sitesLocal * sizeof(double));
     
     //initialization of fft planer....
        
     ////
 	
-	
+	rData_ = rfield->data(); 
 		
 	
 }
@@ -340,4 +362,35 @@ void PlanFFT_ACC<compType>::execute(int fft_type)
 }
 
 
+template<class compType>
+void PlanFFT_ACC<compType>::void execute_r2c_forward_h2d_send()
+{
+
+    Lattice lat(3,rSize_,rHalo_)
+    Site x(lat);
+    long i=0;
+
+    for(x.first();x.test();x.next(),i++)
+    {
+	temp_r2c_real_[i]=rData_[x.index()] ;
+
+
+
+    }
+
+
+
+
+    
+}
+template<class compType>
+void PlanFFT_ACC<compType>::void execute_r2c_forward_d2h_send()
+{
+
+}
+template<class compType>
+void PlanFFT_ACC<compType>::void execute_r2c_forward_dim0()
+{
+
+}
 #endif

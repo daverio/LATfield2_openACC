@@ -1,10 +1,10 @@
 #---------------- parameters -----------------------------------------------#
-EXEC                      := poisson fft_test
+EXEC                      := poisson #fft_test
 TEST_WITH_EVERY_BUILD     := true
 COMPILER                  := CC
 INC                       := -I./../
 #LIB                       := -lfftw3 -lm
-LIB			              := -L/opt/nvidia/cudatoolkit6.5/default/lib64/
+LIB			  := -lcufftw -lcufft
 DEF_LATFIEILD             := -DFFT3D_ACC
 ifdef DEBUG
 OPT_OPENACC               :=
