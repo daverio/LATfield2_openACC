@@ -11,9 +11,10 @@ OPT_OPENACC               :=
 OPT_CPU                   :=
 CFLAG                     := -g -std=c++11 -Mbounds -traceback -w
 else
-OPT_OPENACC               := -O3 -acc -Minfo=accel -ta=tesla:cc35
+OPT_OPENACC               := -O3 -acc -Minfo=accel -ta=tesla:cc35 
 OPT_CPU                   := -O3
-CFLAG                     := -std=c++11 -w
+#CFLAG                     := -std=c++11 -w 
+CFLAG                     := -w -VH15.7
 endif
 
 #---------------- setup -----------------------------------------------------#

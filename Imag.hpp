@@ -29,11 +29,11 @@ class Imag
 
  private:
 	
-#ifndef FFT3D
+#ifndef WITH_FFTS
 	Real data[2];
 #endif
     
-#ifdef FFT3D
+#ifdef WITH_FFTS   
 #ifdef SINGLE
 	fftwf_complex data;
 #endif
@@ -41,7 +41,7 @@ class Imag
 	fftw_complex data;
 #endif	
 #endif
-	
+       
  public:
   //CONSTRUCTORS
   Imag() {;};

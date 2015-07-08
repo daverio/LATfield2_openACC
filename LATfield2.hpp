@@ -38,8 +38,9 @@
 
 #else
 //cufft lib...
-#include "cufft.h"
 #include "cufftw.h"
+#include "cufft.h"
+
 
 #endif
 
@@ -84,7 +85,7 @@ namespace LATfield2
 	#include "LATfield2_PlanFFT_CPU.hpp"
 	#endif
     #ifdef FFT3D_ACC
-    #include "LATfield2_PlanFFT_ACC_fftwTest.hpp"
+    #include "LATfield2_PlanFFT_ACC.hpp"
     #endif
 }
 
