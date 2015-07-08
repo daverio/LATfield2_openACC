@@ -1,5 +1,5 @@
 #---------------- parameters -----------------------------------------------#
-EXEC                      := poisson #fft_test
+EXEC                      := poisson wave_test gettingStarted #fft_test
 TEST_WITH_EVERY_BUILD     := true
 COMPILER                  := CC
 INC                       := -I./../
@@ -14,7 +14,8 @@ else
 OPT_OPENACC               := -O3 -acc -Minfo=accel -ta=tesla:cc35 
 OPT_CPU                   := -O3
 #CFLAG                     := -std=c++11 -w 
-CFLAG                     := -w -VH15.7
+CFLAG                     := -std=c++11 -w -DNO_OUTPUT  -VH15.7
+
 endif
 
 #---------------- setup -----------------------------------------------------#
