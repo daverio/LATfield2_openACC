@@ -3,10 +3,10 @@
 
 /*! \file LATfield2_PlanFFT_ACC.hpp
  \brief FFT wrapper
- 
+
  LATfield2_PlanFFT_ACC.hpp contain the class PlanFFT_ACC definition.
- 
- */ 
+
+ */
 
 
 
@@ -14,9 +14,9 @@
 
 
 
-/*! \class PlanFFT_ACC  
- 
- 
+/*! \class PlanFFT_ACC
+
+
  */
 template<class compType>
 class PlanFFT_ACC
@@ -24,18 +24,18 @@ class PlanFFT_ACC
 	public:
         //! Constructor.
 		PlanFFT_ACC();
-		
+
 	    ~PlanFFT_ACC();
 #ifndef SINGLE
-		
+
         /*!
          Constructor with initialization for complex to complex tranform.
          \sa initialize(Field<compType>*  rfield,Field<compType>*   kfield,const int mem_type = FFT_OUT_OF_PLACE);
          \param rfield : real space field
          \param kfield : fourier space field
          \param mem_type : memory type (FFT_OUT_OF_PLACE or FFT_IN_PLACE). In place mean that both fourier and real space field point to the same data array.
-            
-         */ 
+
+         */
 		PlanFFT_ACC(Field<compType>* rfield, Field<compType>*  kfield, const int mem_type = FFT_OUT_OF_PLACE);
 		/*!
          initialization for complex to complex tranform.
@@ -45,7 +45,7 @@ class PlanFFT_ACC
          \param mem_type : memory type (FFT_OUT_OF_PLACE or FFT_IN_PLACE). In place mean that both fourier and real space field point to the same data array.
          */
         void initialize(Field<compType>*  rfield, Field<compType>*   kfield, const int mem_type = FFT_OUT_OF_PLACE);
-		
+
 		/*!
          Constructor with initialization for real to complex tranform.
          \sa initialize(Field<compType>*  rfield,Field<compType>*   kfield,const int mem_type = FFT_OUT_OF_PLACE);
@@ -62,7 +62,7 @@ class PlanFFT_ACC
          \param mem_type : memory type (FFT_OUT_OF_PLACE or FFT_IN_PLACE). In place mean that both fourier and real space field point to the same data array.
          */
 		void initialize(Field<double>*  rfield,Field<compType>*   kfield,const int mem_type = FFT_OUT_OF_PLACE);
-        
+
         /*!
          Execute the fourier transform.
          \param fft_type: dirrection of the transform. Can be FFT_BACKWARD or FFT_FORWARD.
@@ -74,18 +74,18 @@ class PlanFFT_ACC
 	    void execute_r2c_forward_dim0();
 
 
-#endif		
-        
+#endif
+
     private:
         bool status_;
 		bool type_;
         int mem_type_;
-        
+
         static bool R2C;
 		static bool C2C;
 		static bool initialized;
-        
-        
+
+
         int components_;
 		int rSize_[3];
 		int kSize_[3];
@@ -98,7 +98,7 @@ class PlanFFT_ACC
 
 	    long rSitesLocal_;
 	    long kSitesLocal_;
-        
+
 #ifndef SINGLE
 	    double * temp_r2c_real_;
 	    fftw_complex * temp_r2c_complex_;
@@ -108,8 +108,23 @@ class PlanFFT_ACC
 
 
 	    cufftHandle cufPlan_real_i_;
+
+	    /// forward real to complex
+		// first transopsition
+		void transpose_0_2( fftw_complex * in, fftw_complex * out,int dim_i,int dim_j ,int dim_k);
+		void transpose_0_2_last_proc( fftw_complex * in, fftw_complex * out,int dim_i,int dim_j ,int dim_k);
+		void implement_local_0_last_proc( fftw_complex * in, fftw_complex * out,int proc_dim_i,int proc_dim_j,int proc_dim_k,int proc_size);
+		// second transposition
+		void transpose_1_2(fftw_complex * in , fftw_complex * out  ,int dim_i,int dim_j ,int dim_k);
+		//third transposition
+		void transpose_back_0_3(fftw_complex * in, fftw_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size,int halo,int components,int comp);
+		void implement_0(fftw_complex * in, fftw_complex * out,int r2c_size,int local_size_j,int local_size_k,int halo,int components,int comp);
+		////backward real to complex
+		void b_arrange_data_0(fftw_complex *in, fftw_complex * out,int dim_i,int dim_j ,int dim_k, int khalo, int components, int comp);
+		void b_transpose_back_0_1(fftw_complex * in, fftw_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size);
+		void b_implement_0(fftw_complex * in, fftw_complex * out,int r2c_size,int local_size_j,int local_size_k);
 #endif
-	    
+
 
 };
 
@@ -154,17 +169,17 @@ void PlanFFT_ACC<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 {
 	type_ = C2C;
 	mem_type_=mem_type;
-    
+
 	//general variable
 	if(rfield->components() != kfield->components())
 	{
 		cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for fields with same number of components"<<endl;
 		cerr<<"Latfield2d::PlanFFT_ACC::initialize : coordinate and fourier space fields have not the same number of components"<<endl;
 		cerr<<"Latfield2d : Abort Process Requested"<<endl;
-		
+
 	}
 	else components_ = rfield->components();
-	
+
 	for(int i = 0; i<3; i++)
 	{
 		rSize_[i]=rfield->lattice().size(i);
@@ -174,11 +189,11 @@ void PlanFFT_ACC<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 		rJump_[i]=rfield->lattice().jump(i);
 		kJump_[i]=kfield->lattice().jump(i);
 	}
-	
+
 	rHalo_ = rfield->lattice().halo();
 	kHalo_ = kfield->lattice().halo();
-    
-    
+
+
 	if(rfield->lattice().dim()!=3)
 	{
 		if(parallel.isRoot())
@@ -186,12 +201,12 @@ void PlanFFT_ACC<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 			cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for 3d cubic lattice"<<endl;
 			cerr<<"Latfield2d::PlanFFT_ACC::initialize : real lattice have not 3 dimensions"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
-			
+
 		}
 		parallel.abortForce();
 	}
-	
-	
+
+
 	if(rSize_[0]!=rSize_[1] | rSize_[1]!=rSize_[2])
 	{
 		if(parallel.isRoot())
@@ -199,18 +214,18 @@ void PlanFFT_ACC<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 			cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for 3d cubic lattice"<<endl;
 			cerr<<"Latfield2d::PlanFFT_ACC::initialize : real lattice is not cubic"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
-			
+
  		}
 		parallel.abortForce();
 	}
-    
+
     long rfield_size = rfield->lattice().sitesLocalGross();
-	long kfield_size = kfield->lattice().sitesLocalGross(); 
-	
+	long kfield_size = kfield->lattice().sitesLocalGross();
+
     if(mem_type_ == FFT_IN_PLACE)
 	{
 		if(rfield_size>=kfield_size)
-		{		    
+		{
 			rfield->alloc();
 			kfield->data() = (Imag*)rfield->data();
 		}
@@ -226,15 +241,15 @@ void PlanFFT_ACC<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 		kfield->alloc();
 	}
 
-	
+
 
 //	temp_r2c_real_ = (double*)malloc(rfield->lattice().sitesLocal() * sizeof(double));
 
-    
+
     //initialization of fft planer....
-    
+
     ////
-  	
+
 }
 
 
@@ -253,12 +268,12 @@ void PlanFFT_ACC<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 {
 	type_ = R2C;
 	mem_type_=mem_type;
-	
+
 	//general variable
-	
+
 
 	components_ = rfield->components();
-	
+
 	for(int i = 0; i<3; i++)
 	{
 		rSize_[i]=rfield->lattice().size(i);
@@ -281,7 +296,7 @@ void PlanFFT_ACC<compType>::initialize(Field<double>*  rfield,Field<compType>*  
             cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for fields with same number of components"<<endl;
             cerr<<"Latfield2d::PlanFFT_ACC::initialize : coordinate and fourier space fields have not the same number of components"<<endl;
             cerr<<"Latfield2d : Abort Process Requested"<<endl;
-        
+
             parallel.abortForce();
 		}
 	}
@@ -292,7 +307,7 @@ void PlanFFT_ACC<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 			cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for 3d cubic lattice"<<endl;
 			cerr<<"Latfield2d::PlanFFT_ACC::initialize : real lattice have not 3 dimensions"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
-			
+
 		}
 		parallel.abortForce();
 	}
@@ -303,21 +318,21 @@ void PlanFFT_ACC<compType>::initialize(Field<double>*  rfield,Field<compType>*  
             cerr<<"Latfield2d::PlanFFT_ACC::initialize : fft curently work only for 3d cubic lattice"<<endl;
             cerr<<"Latfield2d::PlanFFT_ACC::initialize : real lattice is not cubic"<<endl;
             cerr<<"Latfield2d : Abort Process Requested"<<endl;
-            
+
         }
         parallel.abortForce();
     }
-    
-	
-	
+
+
+
 
     long rfield_size = rfield->lattice().sitesLocalGross();
 	long kfield_size = kfield->lattice().sitesLocalGross();
-    
+
     if(mem_type_ == FFT_IN_PLACE)
 	{
 		if(rfield_size>=kfield_size)
-		{		    
+		{
 			rfield->alloc();
 			kfield->data() = (Imag*)rfield->data();
 		}
@@ -342,16 +357,16 @@ void PlanFFT_ACC<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 	temp_r2c_complex_ = tempMemory.temp1();
 
 //initialization of fft planer....
-       
+
     ////
-	
-	rData_ = rfield->data(); 
+
+	rData_ = rfield->data();
 	kData_ = (fftw_complex*)kfield->data();
 	//cufftHandle cufPlan_i_;
 	//cufftMakePlanMany(cufftHandle plan, int rank, int *n, int *inembed,
 	//		  int istride, int idist, int *onembed, int ostride,
 //			  int odist, cufftType type, int batch, size_t *workSize);
-	
+
 //        cufftMakePlanMany(cufPlan_i_,1, &rSize[0],  &rSize[0],
 //			  1, 1, int *onembed, int ostride,
 //			  int odist, cufftType type, int batch, size_t *workSize);
@@ -361,8 +376,8 @@ void PlanFFT_ACC<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 //	    MPI_Abort(MPI_COMM_WORLD,11);
 //	}
 
-	
-	
+
+
 	int istride,idist,ostride,odist;
 
 	idist = rJump_[1]*components_;
@@ -383,7 +398,7 @@ void PlanFFT_ACC<compType>::initialize(Field<double>*  rfield,Field<compType>*  
         void * cuStream;
 	cuStream = acc_get_cuda_stream(acc_async_sync);
         cufftSetStream(cufPlan_real_i_,(cudaStream_t) cuStream);
-        
+
 
 }
 
@@ -412,21 +427,21 @@ void PlanFFT_ACC<compType>::execute(int fft_type)
 		}
 		if(fft_type == FFT_BACKWARD)
 		{
-            
-            
+
+
 		}
 	}
 	if(type_ == C2C)
 	{
         if(fft_type == FFT_FORWARD)
 		{
-            
-			
+
+
 		}
 		if(fft_type == FFT_BACKWARD)
 		{
-           
-            
+
+
 		}
 	}
 }
@@ -435,7 +450,7 @@ void PlanFFT_ACC<compType>::execute(int fft_type)
 template<class compType>
 void PlanFFT_ACC<compType>::execute_r2c_forward_h2d_send(int comp)
 {
-    
+
     temp_r2c_real_ = tempMemory.tempReal();
     temp_r2c_complex_ = tempMemory.temp1();
 
@@ -453,9 +468,9 @@ void PlanFFT_ACC<compType>::execute_r2c_forward_h2d_send(int comp)
 #pragma acc update device(temp_r2c_real_[0:rSitesLocal_])
     /*
 #pragma acc update host(temp_r2c_real_[0:rSitesLocal_])
-    
 
-    
+
+
     for(int proc=0;proc<parallel.size();proc++)
     {
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -481,7 +496,7 @@ void PlanFFT_ACC<compType>::execute_r2c_forward_d2h_send(int comp)
     long i=0;
 
 
-#pragma acc update host(temp_r2c_complex_[0:kSitesLocal_][0:2])    
+#pragma acc update host(temp_r2c_complex_[0:kSitesLocal_][0:2])
 
     for(k.first();k.test();k.next(),i++)
     {
@@ -502,7 +517,7 @@ void PlanFFT_ACC<compType>::execute_r2c_forward_dim0()
     fftw_complex * p_out = temp_r2c_complex_;
 /*
 #pragma acc update host(p_in[0:rSitesLocal_])
-    
+
     for(int proc=0;proc<parallel.size();proc++)
     {
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -515,7 +530,7 @@ void PlanFFT_ACC<compType>::execute_r2c_forward_dim0()
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
     }
-    
+
 */
 #pragma acc data present(p_in[0:rSitesLocal_],p_out[0:kSitesLocal_][0:2])
     {
@@ -526,7 +541,7 @@ void PlanFFT_ACC<compType>::execute_r2c_forward_dim0()
     }
 /*
 #pragma acc update host(p_out[0:rSitesLocal_][0:2])
-    
+
     for(int proc=0;proc<parallel.size();proc++)
     {
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -543,4 +558,190 @@ void PlanFFT_ACC<compType>::execute_r2c_forward_dim0()
 */
 
 }
+
+#ifndef SINGLE
+
+/////
+template<class compType>
+void PlanFFT_ACC<compType>::transpose_0_2( fftw_complex * in, fftw_complex * out,int dim_i,int dim_j ,int dim_k)
+{
+	int i,j,k;
+	for(i=0;i<dim_i;i++)
+	{
+		for(j=0;j<dim_j;j++)
+		{
+			for(k=0;k<dim_k;k++)
+			{
+
+				out[k+dim_k*(j+i*dim_j)][0]=in[i+dim_i*(j+k*dim_j)][0];
+				out[k+dim_k*(j+i*dim_j)][1]=in[i+dim_i*(j+k*dim_j)][1];
+
+			}
+		}
+	}
+
+}
+
+template<class compType>
+void PlanFFT_ACC<compType>::transpose_0_2_last_proc( fftw_complex * in, fftw_complex * out,int dim_i,int dim_j ,int dim_k)
+{
+	int i,j,k;
+	for(i=0;i<dim_i;i++)
+	{
+		for(j=0;j<dim_j;j++)
+		{
+			for(k=0;k<dim_k;k++)
+			{
+				out[k+(dim_k+1)*(j+i*dim_j)][0]=in[i+dim_i*(j+k*dim_j)][0];
+				out[k+(dim_k+1)*(j+i*dim_j)][1]=in[i+dim_i*(j+k*dim_j)][1];
+			}
+		}
+	}
+}
+
+template<class compType>
+void PlanFFT_ACC<compType>::implement_local_0_last_proc( fftw_complex * in, fftw_complex * out,int proc_dim_i,int proc_dim_j,int proc_dim_k,int proc_size)
+{
+	int i_in,i_out,j,rank;
+	for(i_in=0;i_in<proc_dim_i;i_in++)
+	{
+		for(j=0;j<proc_dim_j;j++)
+		{
+			for(rank=0;rank<proc_size;rank++)
+			{
+				i_out=i_in+rank*proc_dim_i;
+				out[proc_dim_k + (proc_dim_k+1)*(j+i_out*proc_dim_j)][0]=in[i_in+proc_dim_i*(j+proc_dim_j*rank)][0];
+				out[proc_dim_k + (proc_dim_k+1)*(j+i_out*proc_dim_j)][1]=in[i_in+proc_dim_i*(j+proc_dim_j*rank)][1];
+			}
+		}
+	}
+}
+
+
+template<class compType>
+void PlanFFT_ACC<compType>::transpose_1_2(fftw_complex * in , fftw_complex * out ,int dim_i,int dim_j ,int dim_k )
+{
+	int i,j,k;
+	for(i=0;i<dim_i;i++)
+	{
+		for(j=0;j<dim_j;j++)
+		{
+			for(k=0;k<dim_k;k++)
+			{
+				out[i+dim_i*(k+j*dim_k)][0]=in[i+dim_i*(j+k*dim_j)][0];
+				out[i+dim_i*(k+j*dim_k)][1]=in[i+dim_i*(j+k*dim_j)][1];
+			}
+		}
+	}
+}
+
+template<class compType>
+void PlanFFT_ACC<compType>::transpose_back_0_3( fftw_complex * in, fftw_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size,int halo,int components, int comp)
+{
+	int i,j,k,l, i_t, j_t, k_t;
+	int r2c_halo = r2c + 2*halo;
+	int local_size_k_halo = local_size_k + 2*halo;
+	for (i=0;i<local_r2c;i++)
+	{
+		for(k=0;k<local_size_k;k++)
+		{
+			for(j=0;j<local_size_j;j++)
+			{
+				for(l=0;l<proc_size;l++)
+				{
+					i_t = i + l*local_r2c;
+					j_t = j ;
+					k_t = k ;
+					out[comp+components*(i_t + r2c_halo * (k_t + local_size_k_halo * j_t))][0]=in[i + local_r2c * (j + local_size_j * (k + local_size_k *l)) ][0];
+					out[comp+components*(i_t + r2c_halo * (k_t + local_size_k_halo * j_t))][1]=in[i + local_r2c * (j + local_size_j * (k + local_size_k *l)) ][1];
+				}
+			}
+		}
+	}
+}
+
+template<class compType>
+void PlanFFT_ACC<compType>::implement_0(fftw_complex * in, fftw_complex * out,int r2c_size,int local_size_j,int local_size_k, int halo,int components, int comp)
+{
+	int i,j,k;
+	i=r2c_size-1;
+	int r2c_halo = r2c_size + 2*halo;
+	int local_size_k_halo = local_size_k + 2*halo;
+
+	for(j=0;j<local_size_j;j++)
+	{
+		for(k=0;k<local_size_k;k++)
+		{
+			out[comp+components*(i + r2c_halo * (k + local_size_k_halo *j))][0]=in[j + local_size_j *k][0];
+			out[comp+components*(i + r2c_halo * (k + local_size_k_halo *j))][1]=in[j + local_size_j *k][1];
+		}
+	}
+
+}
+
+
+template<class compType>
+void PlanFFT_ACC<compType>::b_arrange_data_0(fftw_complex *in, fftw_complex * out,int dim_i,int dim_j ,int dim_k, int khalo, int components, int comp)
+{
+	int i,j,k;
+	int jump_i=(dim_i+ 2 *khalo);
+	int jump_j=dim_j+ 2 *khalo;
+	for(i=0;i<dim_i;i++)
+	{
+		for(j=0;j<dim_j;j++)
+		{
+			for(k=0;k<dim_k;k++)
+			{
+				out[j + dim_j * (k + dim_k * i)][0]=in[comp+components*(i + jump_i * (j + jump_j*k))][0];
+				out[j + dim_j * (k + dim_k * i)][1]=in[comp+components*(i + jump_i * (j + jump_j*k))][1];
+			}
+		}
+	}
+
+}
+
+template<class compType>
+void PlanFFT_ACC<compType>::b_transpose_back_0_1( fftw_complex * in, fftw_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size)
+{
+	int i,j,k,l, i_t, j_t, k_t;
+
+	for (i=0;i<local_r2c;i++)
+	{
+		for(k=0;k<local_size_k;k++)
+		{
+			for(j=0;j<local_size_j;j++)
+			{
+				for(l=0;l<proc_size;l++)
+				{
+					i_t = i + l*local_r2c;
+					j_t = j ;
+					k_t = k ;
+					out[i_t + r2c * (k_t + local_size_k * j_t)][0]=in[i + local_r2c * (j + local_size_j * (k + local_size_k *l)) ][0];
+					out[i_t + r2c * (k_t + local_size_k * j_t)][1]=in[i + local_r2c * (j + local_size_j * (k + local_size_k *l)) ][1];
+				}
+			}
+		}
+	}
+}
+
+template<class compType>
+void PlanFFT_ACC<compType>::b_implement_0(fftw_complex * in, fftw_complex * out,int r2c_size,int local_size_j,int local_size_k)
+{
+	int i,j,k;
+	i=r2c_size-1;
+
+
+	for(j=0;j<local_size_j;j++)
+	{
+		for(k=0;k<local_size_k;k++)
+		{
+			out[i + r2c_size * (k + local_size_k *j)][0]=in[j + local_size_j *k][0];
+			out[i + r2c_size * (k + local_size_k *j)][1]=in[j + local_size_j *k][1];
+		}
+	}
+
+}
 #endif
+
+#endif
+
