@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     k.first();
     if(parallel.isRoot())
     {
-        phiK(k)=0.0;
+        phiK(k)=Imag(0.0,0.0);
         k.next();
     }
     for(;k.test();k.next())

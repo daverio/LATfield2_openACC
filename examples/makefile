@@ -13,7 +13,7 @@ CFLAG                     := -g -std=c++11 -Mbounds -traceback -w
 else
 OPT_OPENACC               := -O3 -acc -Minfo=accel -ta=tesla:cc35
 OPT_CPU                   := -O3
-CFLAG                     := -std=c++11 -w -DNO_OUTPUT
+CFLAG                     := -std=c++11 -w -DNO_OUTPUT -DDO3D
 endif
 
 #---------------- setup -----------------------------------------------------#
