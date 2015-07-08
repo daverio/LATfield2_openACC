@@ -356,10 +356,34 @@ void PlanFFT_ACC<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 //			  1, 1, int *onembed, int ostride,
 //			  int odist, cufftType type, int batch, size_t *workSize);
 
-	if (cufftPlan1d(&cufPlan_real_i_, rSize_[0], CUFFT_R2C, rSizeLocal_[1]*rSizeLocal_[2]) != CUFFT_SUCCESS){
+//	if (cufftPlan1d(&cufPlan_real_i_, rSize_[0], CUFFT_D2Z, rSizeLocal_[1]*rSizeLocal_[2]) != CUFFT_SUCCESS){
+//	    fprintf(stderr, "CUFFT error: Plan r2c forward i,  creation failed");
+//	    MPI_Abort(MPI_COMM_WORLD,11);
+//	}
+
+	
+	
+	int istride,idist,ostride,odist;
+
+	idist = rJump_[1]*components_;
+	odist= 1;
+	size_t workSize;
+
+
+	if(cufftMakePlanMany(cufPlan_real_i_, 1, &rSize_[0], &idist,
+			     components_, idist, &odist, rSizeLocal_[1]*rSizeLocal_[2],
+			     odist, CUFFT_D2Z, rSizeLocal_[1],  &workSize) != CUFFT_SUCCESS){
 	    fprintf(stderr, "CUFFT error: Plan r2c forward i,  creation failed");
 	    MPI_Abort(MPI_COMM_WORLD,11);
 	}
+
+
+
+
+        void * cuStream;
+	cuStream = acc_get_cuda_stream(acc_async_sync);
+        cufftSetStream(cufPlan_real_i_,(cudaStream_t) cuStream);
+        
 
 }
 
@@ -427,9 +451,26 @@ void PlanFFT_ACC<compType>::execute_r2c_forward_h2d_send(int comp)
 
 
 #pragma acc update device(temp_r2c_real_[0:rSitesLocal_])
-  
+    /*
+#pragma acc update host(temp_r2c_real_[0:rSitesLocal_])
+    
 
     
+    for(int proc=0;proc<parallel.size();proc++)
+    {
+	MPI_Barrier(MPI_COMM_WORLD);
+	if(proc== parallel.rank())
+	{
+	    for(int l=0;l<rSitesLocal_;l++)
+	    {
+		cout<< l%rSize_[0]<<"  "<<temp_r2c_real_[l]<<endl;
+	    }
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+    }
+    */
+
+
 }
 template<class compType>
 void PlanFFT_ACC<compType>::execute_r2c_forward_d2h_send(int comp)
@@ -437,7 +478,7 @@ void PlanFFT_ACC<compType>::execute_r2c_forward_d2h_send(int comp)
 
     Lattice lat(3,kSize_,kHalo_);
     rKSite k(lat);
-    long i;
+    long i=0;
 
 
 #pragma acc update host(temp_r2c_complex_[0:kSitesLocal_][0:2])    
@@ -459,17 +500,47 @@ void PlanFFT_ACC<compType>::execute_r2c_forward_dim0()
 
     double * p_in = temp_r2c_real_;
     fftw_complex * p_out = temp_r2c_complex_;
-
-
-
-
+/*
+#pragma acc update host(p_in[0:rSitesLocal_])
+    
+    for(int proc=0;proc<parallel.size();proc++)
+    {
+	MPI_Barrier(MPI_COMM_WORLD);
+	if(proc== parallel.rank())
+	{
+	    for(int l=0;l<rSitesLocal_;l++)
+	    {
+		cout<< l%rSize_[0]<<"  "<<p_in[l]<<endl;
+	    }
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+    }
+    
+*/
 #pragma acc data present(p_in[0:rSitesLocal_],p_out[0:kSitesLocal_][0:2])
     {
         #pragma acc host_data use_device(p_in,p_out)
         {
-            cufftExecD2Z(cufPlan_real_i_,(cufftDoubleReal *)p_in,(cufftDoubleComplex *)temp_r2c_complex_);
+            cufftExecD2Z(cufPlan_real_i_,(cufftDoubleReal *)p_in,(cufftDoubleComplex *)p_out);
         }
     }
+/*
+#pragma acc update host(p_out[0:rSitesLocal_][0:2])
+    
+    for(int proc=0;proc<parallel.size();proc++)
+    {
+	MPI_Barrier(MPI_COMM_WORLD);
+	if(proc== parallel.rank())
+	{
+	    cout<< "rank: " << proc << endl;
+	    for(int l=0;l<rSitesLocal_;l++)
+	    {
+		cout<< l%rSize_[0]<<"  "<<p_out[l][0]<<" , "<< p_out[l][1] <<endl;
+	    }
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+    }
+*/
 
 }
 #endif

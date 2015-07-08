@@ -68,7 +68,8 @@ int main(int argc, char **argv)
              {
 		for (x.first(); x.test(); x.next())
 		{
-			phi(x) = cos(2. * M_PI * i * x.coord(0) / (double) BoxSize) * cos(2. * M_PI * j * x.coord(1) / (double) BoxSize) * cos(2. * M_PI * l * x.coord(2) / (double) BoxSize);
+		    phi(x) = cos(2. * M_PI * i * x.coord(0) / (double) BoxSize) * cos(2. * M_PI * j * x.coord(1) / (double) BoxSize) * cos(2. * M_PI * l * x.coord(2) / (double) BoxSize);
+		    //phi(x)=x.coord(0);
 		}
 
 #ifdef FULL_OUTPUT
@@ -86,13 +87,11 @@ int main(int argc, char **argv)
 				cout << " rank = " << rnk << endl;
 				for (k.first(); k.test(); k.next())
 				{
-					if (k.coord(0) == 0)
-						cout << " " << setfill('0') << setw(3) << k.coord(1) << "-" << setfill('0') << setw(3) << k.coord(2) << " ";
+					if (k.coord(0) == 0)cout << " " << setfill('0') << setw(3) << k.coord(1) << "-" << setfill('0') << setw(3) << k.coord(2) << " ";
 					
 					cout << setprecision(2) << chop(phiK(k).real()/lat.sites(), 1.0e-12) << "+" << setprecision(2) << chop(phiK(k).imag()/lat.sites(), 1.0e-12) << "i ";
 
-					if (k.coord(0) == latK.size(0)-1)
-						cout << endl;
+					    if (k.coord(0) == latK.size(0)-1)cout << endl;
 				}
 			}
 		}
@@ -130,7 +129,7 @@ int main(int argc, char **argv)
 			if (fabs(phiK(k).real()/lat.sites() - val_re) > TOLERANCE || fabs(phiK(k).imag()/lat.sites() - val_im) > TOLERANCE)
 			{
 #ifndef NO_OUTPUT
-				cout << " proc#" << parallel.rank() << " : " << setfill('0') << setw(3) << k.coord(0) << "-" << setfill('0') << setw(3) << k.coord(1) << "-" << setfill('0') << setw(3) << k.coord(2) << "  " << phiK(k).real() << "+" << phiK(k).imag() << "i  exceeding tolerance!" << endl;
+/				cout << " proc#" << parallel.rank() << " : " << setfill('0') << setw(3) << k.coord(0) << "-" << setfill('0') << setw(3) << k.coord(1) << "-" << setfill('0') << setw(3) << k.coord(2) << "  " << phiK(k).real() << "+" << phiK(k).imag() << "i  exceeding tolerance!" << endl;
 #endif
 				count++;
 			}

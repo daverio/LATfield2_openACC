@@ -40,7 +40,8 @@
 //cufft lib...
 #include "cufftw.h"
 #include "cufft.h"
-
+#include "cuda.h"
+#include <openacc.h>
 
 #endif
 
