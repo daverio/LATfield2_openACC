@@ -540,10 +540,27 @@ void PlanFFT_ACC<compType>::initialize(Field<double>*  rfield,Field<compType>*  
         kData_ = (fftw_complex*)kfield->data();
         kData_ += kfield->lattice().siteFirst()*components_;	
 
+#ifdef DO3D
+	//fPlan_i_ = fftw_plan_many_dft_r2c(1,&rSize_[0],rSizeLocal_[1] ,rData_,rSize_,components_, rJump_[1]*components_,temp_,kSizeLocal_, components_,kSizeLocal_[0]*components_,FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
+    int idist_i = rJump_[1]*components_;
+	int odist_i = 1;
+	fPlan_i_ = fftw_plan_many_dft_r2c(1,&rSize_[0],rSizeLocal_[1] ,rData_,&idist_i,components_, idist_i,temp_,&odist_i,rSizeLocal_[1]*rSizeLocal_[2],odist_i,FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
+	int idist_j = 1;
+	int odist_j = 1;
+	fPlan_j_ = fftw_plan_many_dft(1,&rSize_[0],rSizeLocal_[2]*r2cSizeLocal_,temp_,&idist_j,rSizeLocal_[2]*r2cSizeLocal_,idist_j,temp_,&odist_j,rSizeLocal_[2]*r2cSizeLocal_,odist_j,FFTW_FORWARD,FFTW_ESTIMATE); 
+	int idist_k = 1;
+	int odist_k = 1;
+	fPlan_k_ = fftw_plan_many_dft(1,&rSize_[0],r2cSizeLocal_as_,temp_,&idist_k,rSizeLocal_[2]*r2cSizeLocal_,idist_k,temp1_,&odist_k,rSizeLocal_[2]*r2cSizeLocal_as_,odist_k,FFTW_FORWARD,FFTW_ESTIMATE);
+	int idist_k_real = r2cSizeLocal_;
+	int odist_k_real = 1;
+	fPlan_k_real_ =  fftw_plan_many_dft(1,&rSize_[0],rSizeLocal_[2],&temp_[r2cSizeLocal_as_],&idist_k_real,rSizeLocal_[2]*r2cSizeLocal_,idist_k_real,&temp1_[r2cSizeLocal_as_*rSizeLocal_[2]*rSize_[0]],&odist_k_real,rSizeLocal_[2],odist_k_real,FFTW_FORWARD,FFTW_ESTIMATE);
+	//fPlan_i_ = fftw_plan_dft_r2c_1d(rSize_[0],rData_,temp_,FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
+#else
 	fPlan_i_ = fftw_plan_many_dft_r2c(1,&rSize_[0],rSizeLocal_[1] ,rData_,NULL,components_, rJump_[1]*components_,temp_,NULL,rSizeLocal_[1]*rSizeLocal_[2],1,FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
 	fPlan_j_ = fftw_plan_many_dft(1,&rSize_[0],rSizeLocal_[2]*r2cSizeLocal_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,FFTW_FORWARD,FFTW_ESTIMATE); 
 	fPlan_k_ = fftw_plan_many_dft(1,&rSize_[0],r2cSizeLocal_as_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp1_,NULL,rSizeLocal_[2]*r2cSizeLocal_as_,1,FFTW_FORWARD,FFTW_ESTIMATE); 
 	fPlan_k_real_ =  fftw_plan_many_dft(1,&rSize_[0],rSizeLocal_[2],&temp_[r2cSizeLocal_as_],NULL,rSizeLocal_[2]*r2cSizeLocal_,r2cSizeLocal_,&temp1_[r2cSizeLocal_as_*rSizeLocal_[2]*rSize_[0]],NULL,rSizeLocal_[2],1,FFTW_FORWARD,FFTW_ESTIMATE);
+#endif
 	
 	bPlan_k_ = fftw_plan_many_dft(1,&rSize_[0],kSizeLocal_[2]*r2cSizeLocal_,temp_,NULL,kSizeLocal_[2]*r2cSizeLocal_,1,temp_,NULL,kSizeLocal_[2]*r2cSizeLocal_,1,FFTW_BACKWARD,FFTW_ESTIMATE);
 	bPlan_j_ = fftw_plan_many_dft(1,&rSize_[0],r2cSizeLocal_as_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp1_,NULL,rSizeLocal_[2]*r2cSizeLocal_as_,1,FFTW_BACKWARD,FFTW_ESTIMATE); 
@@ -592,12 +609,33 @@ void PlanFFT_ACC<compType>::execute(int fft_type)
 				}
 		
 #else
+/*#ifdef DO1DONLY
+				for(int l = 0; l < rSizeLocal_[2]; l++)
+				{
+					for (int m = 0; m < rSizeLocal_[1]; m++)
+					{
+						p_in = &rData_[(rJump_[2]*l + rJump_[1]*m)*components_ + comp];
+						p_out = &temp_[kSizeLocal_[0]*(m + rSizeLocal_[1] * l)];
+						fftw_execute_dft_r2c(fPlan_i_,p_in,p_out);
+					}
+					for (int m = 0; m < 
+				}
+#else*/
 				for(int l = 0;l< rSizeLocal_[2] ;l++)
 				{
 					p_in = &rData_[rJump_[2]*l*components_ + comp];
-					p_out = &temp_[l*rSizeLocal_[1]];
+					p_out = &temp_[l*rSizeLocal_[1]*kSizeLocal_[0]];
 					fftw_execute_dft_r2c(fPlan_i_,p_in,p_out);
 				}
+//#endif
+				
+#ifdef DO1DONLY
+				for(int l = 0; l < kSizeLocal_[0]*kSizeLocal_[1]*kSizeLocal_[2]; l++)
+				{
+					kData_[l][0] = temp_[l][0];
+					kData_[l][1] = temp_[l][1];
+				}
+#endif
 #endif
 		/*
 				//verif step 1
@@ -624,7 +662,7 @@ void PlanFFT_ACC<compType>::execute(int fft_type)
 					MPI_Barrier(MPI_COMM_WORLD);
 
 					}	*/		
-				
+#ifndef DO1DONLY				
 				
 				MPI_Alltoall(temp_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, temp1_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, parallel.dim1_comm()[parallel.grid_rank()[0]]);
 				MPI_Gather(&temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]][0], 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC, &temp1_[rSize_[0]/2*rSizeLocal_[1]*rSizeLocal_[2]][0] , 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC ,parallel.grid_size()[1]-1, parallel.dim1_comm()[parallel.grid_rank()[0]]);
@@ -722,7 +760,7 @@ void PlanFFT_ACC<compType>::execute(int fft_type)
 				transpose_back_0_3(temp_, kData_,r2cSize_,r2cSizeLocal_as_,rSizeLocal_[2],rSizeLocal_[1],parallel.grid_size()[1],kHalo_,components_,comp);
 				implement_0(&temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]], kData_,r2cSize_,rSizeLocal_[2],rSizeLocal_[1],kHalo_,components_,comp);
 				
-				
+#endif				
 			}
 			
 			
