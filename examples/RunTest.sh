@@ -32,8 +32,8 @@ run_test poisson_cpu 64 2 4
 # run_test poisson_cpu 128
 # run_test fft_test_openacc 64
 run_test poisson_openacc 64 2 4
-run_test poisson_cpu 256 2 4
-run_test poisson_openacc 256 2 4
+run_test poisson_cpu 512 2 4
+run_test poisson_openacc 512 2 4
 # run_test fft_test_openacc 128
 # run_test poisson_openacc 128
 # run_test wave_test_openacc 16
