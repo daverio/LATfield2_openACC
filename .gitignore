@@ -1,3 +1,5 @@
 *_cpu
 *_openacc
 vgcore.*
+*.log
+*.qdbg
