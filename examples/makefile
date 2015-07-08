@@ -1,5 +1,5 @@
 #---------------- parameters -----------------------------------------------#
-EXEC                      := poisson #fft_test
+EXEC                      := poisson wave_test gettingStarted #fft_test
 TEST_WITH_EVERY_BUILD     := true
 COMPILER                  := CC
 INC                       := -I./../
@@ -13,9 +13,10 @@ CFLAG                     := -g -std=c++11 -Mbounds -traceback -w --gnu
 else
 OPT_OPENACC               := -O3 -acc -Minfo=accel -ta=tesla:cc35 -VH15.7
 OPT_CPU                   := -O3
-# CFLAG                     := -std=c++11 -w
-CFLAG                     := -std=c++11 -w -Y0,/users/hck60/pgi -Yc,/users/hck60/pgi -Mqq,expand+beforeaccel,printblocks
+CFLAG                     := -std=c++11 -DNO_OUTPUT -w
+# CFLAG                     := -std=c++11 -w -Y0,/users/hck60/pgi -Yc,/users/hck60/pgi -Mqq,expand+beforeaccel,printblocks
 # CFLAG                     := -E
+>>>>>>> master
 endif
 
 #---------------- setup -----------------------------------------------------#
