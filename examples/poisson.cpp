@@ -84,7 +84,9 @@ int main(int argc, char **argv)
 
     sigma2 = BoxSize*BoxSize/9.;
 
-#ifdef _OPENACC
+#ifdef GPU
+    double ctime_start_setup_time_openacc = MPI_Wtime();
+
     long temp_size = 0;
     for(x.first();x.test();x.next())
     {
@@ -105,9 +107,12 @@ int main(int argc, char **argv)
             site_ix += 1;
         }
     }
+    parallel.barrier();
+    if(parallel.grid_rank()[0]==0 && parallel.grid_rank()[1]==0) printf("Elapsed Setup Time (CTime,OpenACC)= %9.3e [sec]\n",(MPI_Wtime() - ctime_start_setup_time_openacc));
 
     {
-        COUT<<"Running with temporary data structures";
+        COUT<<"Running with gaussian on gpu\n";
+        double ctime_start_gaussian_kernel_time = MPI_Wtime();
         long half_lat_size_0 = lat.size(0)/2;
         long half_lat_size_1 = lat.size(1)/2;
         long half_lat_size_2 = lat.size(2)/2;
@@ -117,15 +122,17 @@ int main(int argc, char **argv)
             for(long site_ix = 0; site_ix < temp_size; site_ix++)
             {
                 double x2 = pow(0.5 + temp_x_coord_0[site_ix] - half_lat_size_0,2.);
-                temp_rho[site_ix] = x2;
-            //     x2 += pow(0.5l + temp_x_coord_1[site_ix] - half_lat_size_1,2);
-            //     x2 += pow(0.5l + temp_x_coord_2[site_ix] - half_lat_size_2,2);
-            //     temp_rho[site_ix]= 1.0 * exp(-x2/sigma2) + 0.1;
-            // mean += temp_rho[site_ix];
+                x2 += pow(0.5 + temp_x_coord_1[site_ix] - half_lat_size_1,2.);
+                x2 += pow(0.5 + temp_x_coord_2[site_ix] - half_lat_size_2,2.);
+                temp_rho[site_ix]= 1.0 * exp(-x2/sigma2) + 0.1;
+            mean += temp_rho[site_ix];
             }
         }
+        parallel.barrier();
+        if(parallel.grid_rank()[0]==0 && parallel.grid_rank()[1]==0) printf("Elapsed Gaussian Time (CTime,OpenACC)= %9.3e [sec]\n",(MPI_Wtime() - ctime_start_gaussian_kernel_time));
     }
 #else
+    double ctime_original_time = MPI_Wtime();
     for(x.first();x.test();x.next())
     {
         double x2 = pow(0.5l + x.coord(0) - lat.size(0)/2,2);
@@ -134,8 +141,10 @@ int main(int argc, char **argv)
         rho(x)= 1.0 * exp(-x2/sigma2) + 0.1;
 	mean += rho(x);
     }
+    parallel.barrier();
+    if(parallel.grid_rank()[0]==0 && parallel.grid_rank()[1]==0) printf("Elapsed Gaussian Time (CTime,Original)= %9.3e [sec]\n",(MPI_Wtime() - ctime_original_time));
 #endif
-#ifdef _OPENACC
+#ifdef GPU
     {
         long site_ix = 0;
         for(x.first();x.test();x.next()) {
@@ -212,7 +221,7 @@ int main(int argc, char **argv)
 #ifdef SINGLE
 #define TOLERANCE 1.0e-6
 #else
-#define TOLERANCE 1.0e-11
+#define TOLERANCE 1.0e-10
 #endif
     if (maxError > TOLERANCE) exit(max(1, 1 + (int) fabs(log10(maxError))));
     else exit(0);
