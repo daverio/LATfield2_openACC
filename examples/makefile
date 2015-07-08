@@ -13,8 +13,8 @@ CFLAG                     := -g -std=c++11 -Mbounds -traceback -w --gnu
 else
 OPT_OPENACC               := -O3 -acc -Minfo=accel -ta=tesla:cc35 -VH15.7
 OPT_CPU                   := -O3
-CFLAG                     := -std=c++11 -w
-# CFLAG                     := -std=c++11 -w -Y0,/users/hck60/pgi -Mqq,expand+beforeaccel,printblocks -v
+# CFLAG                     := -std=c++11 -w
+CFLAG                     := -std=c++11 -w -Y0,/users/hck60/pgi -Yc,/users/hck60/pgi -Mqq,expand+beforeaccel,printblocks
 # CFLAG                     := -E
 endif
 
@@ -50,4 +50,4 @@ tests: ${EXEC_OPENACC} ${EXEC_CPU}
 	$(COMPILER) $< $(INC) $(DEF) $(LIB_OPENACC) $(OPT_OPENACC) $(CFLAG) -o $@
 
 clean:
-	rm -f $(EXEC) *.o *~
+	rm -f ${EXEC_CPU} ${EXEC_OPENACC} *.o *~
