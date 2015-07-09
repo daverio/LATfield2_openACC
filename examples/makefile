@@ -5,7 +5,8 @@ COMPILER                  := CC
 INC                       := -I./../
 #LIB                       := -lfftw3 -lm
 LIB			  := -lcufftw -lcufft
-DEF_LATFIEILD             := -DFFT3D_ACC
+DEF_LATFIELD_OPENACC      := -DFFT3D_ACC
+DEF_LATFIELD_CPU          := -DFFT3D
 ifdef DEBUG
 OPT_OPENACC               :=
 OPT_CPU                   :=
@@ -13,14 +14,15 @@ CFLAG                     := -g -std=c++11 -Mbounds -traceback -w
 else
 OPT_OPENACC               := -O3 -acc -Minfo=accel -ta=tesla:cc35
 OPT_CPU                   := -O3
-CFLAG                     := -std=c++11 -w -DNO_OUTPUT -DDO3D
+CFLAG                     := -std=c++11 -w -DNO_OUTPUT -DDO3D -VH15.7
 endif
 
 #---------------- setup -----------------------------------------------------#
 HEADER                    := $(wildcard ../*.hpp) $(wildcard LATfield2d/*.h)
 EXEC_CPU                  := $(addsuffix _cpu,$(EXEC))
 EXEC_OPENACC              := $(addsuffix _openacc,$(EXEC))
-DEF                       := $(DEF_LATFIEILD)
+DEF_OPENACC               := $(DEF_LATFIELD_OPENACC)
+DEF_CPU                   := $(DEF_LATFIELD_CPU)
 ifeq ($(TEST_WITH_EVERY_BUILD),true)
 ADDITIONAL_BUILD_TARGETS=tests
 else
@@ -42,10 +44,10 @@ tests: ${EXEC_OPENACC} ${EXEC_CPU}
 	./RunTest.sh
 
 %_cpu: %.cpp $(HEADER) makefile
-	$(COMPILER) $< $(INC) $(DEF) $(LIB) $(OPT_CPU) $(CFLAG) -o $@
+	$(COMPILER) $< $(INC) $(DEF_CPU) $(LIB) $(OPT_CPU) $(CFLAG) -o $@
 
 %_openacc: %.cpp $(HEADER) makefile
-	$(COMPILER) $< $(INC) $(DEF) $(LIB) $(OPT_OPENACC) $(CFLAG) -o $@
+	$(COMPILER) $< $(INC) $(DEF_OPENACC) $(LIB) $(OPT_OPENACC) $(CFLAG) -o $@
 
 clean:
 	rm -f $(EXEC) *.o *~

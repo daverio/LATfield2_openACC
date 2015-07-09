@@ -17,6 +17,7 @@ function run_test {
 }
 
 #run tests
+# run_test gettingStarted_openacc
 # run_test fft_test_cpu 64
 # run_test poisson_cpu 64
 # run_test fft_test_cpu 128
@@ -28,4 +29,10 @@ function run_test {
 run_test wave_test_openacc 16
 echo "Running wave_test_openacc with problem size 64"
 aprun -n 8 ${script_dir}/wave_test_openacc -n 2 -m 4 -b 64
+# run_test wave_test_openacc 16
+# run_test wave_test_openacc 64 2 4
+
+run_test wave_test_cpu 512 4 4
+run_test wave_test_openacc 512 4 4 #this does not crash on Piz Daint
+run_test wave_test_openacc 512 2 2 #this crashes on Piz Daint
 echo "All tests passed"
