@@ -24,74 +24,74 @@ class PlanFFT_CPU
 	public:
 	    //! Constructor.
 		PlanFFT_CPU();
-		
+
 #ifndef SINGLE
 	    /*!
 	      Constructor with initialization for complex to complex tranform.
-              \sa initialize(Field<compType>*  rfield,Field<compType>*   kfield,const int mem_type = FFT_OUT_OF_PLACE); 
-              \param rfield : real space field 
+              \sa initialize(Field<compType>*  rfield,Field<compType>*   kfield,const int mem_type = FFT_OUT_OF_PLACE);
+              \param rfield : real space field
               \param kfield : fourier space field
-              \param mem_type : memory type (FFT_OUT_OF_PLACE or FFT_IN_PLACE). In place mean that both fourier and real space field point to the same data array. 
+              \param mem_type : memory type (FFT_OUT_OF_PLACE or FFT_IN_PLACE). In place mean that both fourier and real space field point to the same data array.
 	     */
 	    PlanFFT_CPU(Field<compType>* rfield, Field<compType>*  kfield,const int mem_type = FFT_OUT_OF_PLACE);
 	    /*!
 	      initialization for complex to complex tranform.
 	      For more detail see the QuickStart guide.
-	      \param rfield : real space field 
-	      \param kfield : fourier space field 
+	      \param rfield : real space field
+	      \param kfield : fourier space field
 	      \param mem_type : memory type (FFT_OUT_OF_PLACE or FFT_IN_PLACE). In place mean that both fourier and real space field point to the same data array.
 	     */
 	    void initialize(Field<compType>*  rfield,Field<compType>*   kfield,const int mem_type = FFT_OUT_OF_PLACE);
-		
+
     	    /*!
-	      Constructor with initialization for real to complex tranform. 
-	      \sa initialize(Field<compType>*  rfield,Field<compType>*   kfield,const int mem_type = FFT_OUT_OF_PLACE); 
-	      \param rfield : real space field 
-	      \param kfield : fourier space field 
+	      Constructor with initialization for real to complex tranform.
+	      \sa initialize(Field<compType>*  rfield,Field<compType>*   kfield,const int mem_type = FFT_OUT_OF_PLACE);
+	      \param rfield : real space field
+	      \param kfield : fourier space field
               \param mem_type : memory type (FFT_OUT_OF_PLACE or FFT_IN_PLACE). In place mean that both fourier and real space field point to the same data array.
 	     */
 	    PlanFFT_CPU(Field<double>* rfield, Field<compType>*  kfield,const int mem_type = FFT_OUT_OF_PLACE);
 	    /*!
 	      initialization for real to complex tranform.
 	      For more detail see the QuickStart guide.
-	      \param rfield : real space field 
+	      \param rfield : real space field
 	      \param kfield : fourier space field
-	      \param mem_type : memory type (FFT_OUT_OF_PLACE or FFT_IN_PLACE). In place mean that both fourier and real space field point to the same data array. 
+	      \param mem_type : memory type (FFT_OUT_OF_PLACE or FFT_IN_PLACE). In place mean that both fourier and real space field point to the same data array.
              */
 	    void initialize(Field<double>*  rfield,Field<compType>*   kfield,const int mem_type = FFT_OUT_OF_PLACE);
-		
-		
-		
+
+
+
 #endif
-		
-#ifdef SINGLE		
-		
+
+#ifdef SINGLE
+
 		PlanFFT_CPU(Field<compType>* rfield, Field<compType>*  kfield,const int mem_type = FFT_OUT_OF_PLACE);
 		void initialize(Field<compType>*  rfield,Field<compType>*   kfield,const int mem_type = FFT_OUT_OF_PLACE);
-		
-		
+
+
 		PlanFFT_CPU(Field<float>* rfield, Field<compType>*  kfield,const int mem_type = FFT_OUT_OF_PLACE);
 		void initialize(Field<float>*  rfield,Field<compType>*   kfield,const int mem_type = FFT_OUT_OF_PLACE);
-		
-		
+
+
 #endif
-		
-		
-		
+
+
+
 		void execute(int fft_type);
-				
+
 	private:
 		bool status_;
 		bool type_;
 		int mem_type_;
-		
+
 		static bool R2C;
 		static bool C2C;
-		
+
 		static bool initialized;
-		
+
 		//data description variable, fftw plan, and temp
-		
+
 		int components_;
 		int rSize_[3];
 		int kSize_[3];
@@ -104,7 +104,7 @@ class PlanFFT_CPU
 		int r2cSizeLocal_as_;
 		int rHalo_;
 		int kHalo_;
-		
+
 #ifdef SINGLE
 		float * rData_; //pointer to start of data (halo skip)
 		fftwf_complex * cData_; //pointer to start of data (halo skip)
@@ -112,19 +112,19 @@ class PlanFFT_CPU
 		fftwf_complex * temp_;
 		fftwf_complex * temp1_;//needed if field got more than 1 component
 
-		
+
 		fftwf_plan fPlan_i_;
 		fftwf_plan fPlan_j_;
 		fftwf_plan fPlan_k_;
 		fftwf_plan fPlan_k_real_;
-		
+
 		fftwf_plan bPlan_i_;
 		fftwf_plan bPlan_j_;
 		fftwf_plan bPlan_j_real_;
 		fftwf_plan bPlan_k_;
-		
+
 		///transpostion fonction
-		
+
 		/// forward real to complex
 		// first transopsition
 		void transpose_0_2( fftwf_complex * in, fftwf_complex * out,int dim_i,int dim_j ,int dim_k);
@@ -132,7 +132,7 @@ class PlanFFT_CPU
 		void implement_local_0_last_proc( fftwf_complex * in, fftwf_complex * out,int proc_dim_i,int proc_dim_j,int proc_dim_k,int proc_size);
 		// second transposition
 		void transpose_1_2(fftwf_complex * in , fftwf_complex * out  ,int dim_i,int dim_j ,int dim_k);
-		//third transposition 
+		//third transposition
 		void transpose_back_0_3(fftwf_complex * in, fftwf_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size,int halo,int components,int comp);
 		void implement_0(fftwf_complex * in, fftwf_complex * out,int r2c_size,int local_size_j,int local_size_k,int halo,int components,int comp);
 		////backward real to complex
@@ -140,7 +140,7 @@ class PlanFFT_CPU
 		void b_transpose_back_0_1(fftwf_complex * in, fftwf_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size);
 		void b_implement_0(fftwf_complex * in, fftwf_complex * out,int r2c_size,int local_size_j,int local_size_k);
 
-		
+
 #endif
 #ifndef SINGLE
 
@@ -151,19 +151,19 @@ class PlanFFT_CPU
 		fftw_complex * temp_;
 		fftw_complex * temp1_;//needed if field got more than 1 component
 
-		
+
 		fftw_plan fPlan_i_;
 		fftw_plan fPlan_j_;
 		fftw_plan fPlan_k_;
 		fftw_plan fPlan_k_real_;
-		
+
 		fftw_plan bPlan_i_;
 		fftw_plan bPlan_j_;
 		fftw_plan bPlan_j_real_;
 		fftw_plan bPlan_k_;
-		
+
 		///transpostion fonction
-		
+
 		/// forward real to complex
 		// first transopsition
 		void transpose_0_2( fftw_complex * in, fftw_complex * out,int dim_i,int dim_j ,int dim_k);
@@ -171,7 +171,7 @@ class PlanFFT_CPU
 		void implement_local_0_last_proc( fftw_complex * in, fftw_complex * out,int proc_dim_i,int proc_dim_j,int proc_dim_k,int proc_size);
 		// second transposition
 		void transpose_1_2(fftw_complex * in , fftw_complex * out  ,int dim_i,int dim_j ,int dim_k);
-		//third transposition 
+		//third transposition
 		void transpose_back_0_3(fftw_complex * in, fftw_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size,int halo,int components,int comp);
 		void implement_0(fftw_complex * in, fftw_complex * out,int r2c_size,int local_size_j,int local_size_k,int halo,int components,int comp);
 		////backward real to complex
@@ -179,11 +179,11 @@ class PlanFFT_CPU
 		void b_transpose_back_0_1(fftw_complex * in, fftw_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size);
 		void b_implement_0(fftw_complex * in, fftw_complex * out,int r2c_size,int local_size_j,int local_size_k);
 
-	
-		
-		
+
+
+
 #endif
-		
+
 	};
 
 //constants
@@ -220,18 +220,18 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 {
 	type_ = C2C;
 	mem_type_=mem_type;
-	
+
 	//general variable
-	
+
 	if(rfield->components() != kfield->components())
 	{
 		cerr<<"Latfield2d::PlanFFT::initialize : fft curently work only for fields with same number of components"<<endl;
 		cerr<<"Latfield2d::PlanFFT::initialize : coordinate and fourier space fields have not the same number of components"<<endl;
 		cerr<<"Latfield2d : Abort Process Requested"<<endl;
-		
+
 	}
 	else components_ = rfield->components();
-	
+
 	for(int i = 0; i<3; i++)
 	{
 		rSize_[i]=rfield->lattice().size(i);
@@ -246,17 +246,17 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 	r2cSizeLocal_ = 0;
 	rHalo_ = rfield->lattice().halo();
 	kHalo_ = kfield->lattice().halo();
-	
+
 	//Pointer to data
 
-	rData_ = new float[1]; //to be sure that rData is instantiate 
+	rData_ = new float[1]; //to be sure that rData is instantiate
 	cData_ = (fftwf_complex*)rfield->data();
 	cData_ += rfield->lattice().siteFirst(); //usefull point !!
 	kData_ = (fftwf_complex*)kfield->data();
 	kData_ += kfield->lattice().siteFirst();
-	
+
 	//tempory memory ( allocated !!! to be sur to have enough memory !)
-	
+
 	if(components_ == 1)
 	{
 		temp_ = (fftwf_complex *)fftwf_malloc(rSize_[0]*rSize_[1]*rSize_[2]*sizeof(fftwf_complex));
@@ -267,7 +267,7 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 		temp_ = (fftwf_complex *)fftwf_malloc(rSize_[0]*rSize_[1]*rSize_[2]*sizeof(fftwf_complex));
 		temp1_ = (fftwf_complex *)fftwf_malloc(rSize_[0]*rSize_[1]*rSize_[2]*sizeof(fftwf_complex));
 	}
-	
+
 	if(rfield->lattice().dim()!=3)
 	{
 		if(parallel.isRoot())
@@ -275,11 +275,11 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 			cerr<<"Latfield2d::PlanFFT::initialize : fft curently work only for 3d cubic lattice"<<endl;
 			cerr<<"Latfield2d::PlanFFT::initialize : real lattice have not 3 dimensions"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
-			
+
 		}
 		parallel.abortForce();
 	}
-	
+
 	if(rSize_[0]!=rSize_[1] | rSize_[1]!=rSize_[2])
 	{
 		if(parallel.isRoot())
@@ -287,7 +287,7 @@ void PlanFFT_CPU<compType>::initialize(Field<compType>*  rfield,Field<compType>*
 			cerr<<"Latfield2d::PlanFFT::initialize : fft curently work only for 3d cubic lattice"<<endl;
 			cerr<<"Latfield2d::PlanFFT::initialize : real lattice is not cubic"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
-			
+
 		}
 		parallel.abortForce();
 	}
@@ -305,17 +305,17 @@ void PlanFFT_CPU<compType>::initialize(Field<float>*  rfield,Field<compType>*   
 {
 	type_ = R2C;
 	mem_type_=mem_type;
-	
+
 	//general variable
 	if(rfield->components() != kfield->components())
 	{
 		cerr<<"Latfield2d::PlanFFT::initialize : fft curently work only for fields with same number of components"<<endl;
 		cerr<<"Latfield2d::PlanFFT::initialize : coordinate and fourier space fields have not the same number of components"<<endl;
 		cerr<<"Latfield2d : Abort Process Requested"<<endl;
-		
+
 	}
 	else components_ = rfield->components();
-	
+
 	for(int i = 0; i<3; i++)
 	{
 		rSize_[i]=rfield->lattice().size(i);
@@ -331,21 +331,21 @@ void PlanFFT_CPU<compType>::initialize(Field<float>*  rfield,Field<compType>*   
 	else r2cSizeLocal_ = r2cSizeLocal_as_;
 	rHalo_ = rfield->lattice().halo();
 	kHalo_ = kfield->lattice().halo();
-	
-	
-	
 
-	
+
+
+
+
 	tempMemory.setTemp((r2cSize_+2) * (rSizeLocal_[1]+2) * (rSizeLocal_[2]+2));
 
 
-	
+
 	temp_  = tempMemory.temp1();
 	temp1_ = tempMemory.temp2();
-		
-	
-	
-	
+
+
+
+
 	if(rfield->lattice().dim()!=3)
 	{
 		if(parallel.isRoot())
@@ -353,13 +353,13 @@ void PlanFFT_CPU<compType>::initialize(Field<float>*  rfield,Field<compType>*   
 			cerr<<"Latfield2d::PlanFFT::initialize : fft curently work only for 3d cubic lattice"<<endl;
 			cerr<<"Latfield2d::PlanFFT::initialize : real lattice have not 3 dimensions"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
-			
+
 		}
 		parallel.abortForce();
 	}
-	
+
 	//COUT << rSize_[0] << "   "<< rSize_[1]<< "   "<< rSize_[2] <<endl;
-	
+
 	if(rSize_[0]!=rSize_[1] | rSize_[1]!=rSize_[2])
 	{
 		if(parallel.isRoot())
@@ -367,29 +367,29 @@ void PlanFFT_CPU<compType>::initialize(Field<float>*  rfield,Field<compType>*   
 			cerr<<"Latfield2d::PlanFFT::initialize : fft curently work only for 3d cubic lattice"<<endl;
 			cerr<<"Latfield2d::PlanFFT::initialize : real lattice is not cubic"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
-			
+
 		}
 		parallel.abortForce();
 	}
-	
+
 	//create the fftw_plan
-	
+
 	fPlan_i_ = fftwf_plan_many_dft_r2c(1,&rSize_[0],rSizeLocal_[1] ,rData_,NULL,components_, rJump_[1]*components_,temp_,NULL,rSizeLocal_[1]*rSizeLocal_[2],1,FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
-	fPlan_j_ = fftwf_plan_many_dft(1,&rSize_[0],rSizeLocal_[2]*r2cSizeLocal_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,FFTW_FORWARD,FFTW_ESTIMATE); 
-	fPlan_k_ = fftwf_plan_many_dft(1,&rSize_[0],r2cSizeLocal_as_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp1_,NULL,rSizeLocal_[2]*r2cSizeLocal_as_,1,FFTW_FORWARD,FFTW_ESTIMATE); 
+	fPlan_j_ = fftwf_plan_many_dft(1,&rSize_[0],rSizeLocal_[2]*r2cSizeLocal_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,FFTW_FORWARD,FFTW_ESTIMATE);
+	fPlan_k_ = fftwf_plan_many_dft(1,&rSize_[0],r2cSizeLocal_as_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp1_,NULL,rSizeLocal_[2]*r2cSizeLocal_as_,1,FFTW_FORWARD,FFTW_ESTIMATE);
 	fPlan_k_real_ =  fftwf_plan_many_dft(1,&rSize_[0],rSizeLocal_[2],&temp_[r2cSizeLocal_as_],NULL,rSizeLocal_[2]*r2cSizeLocal_,r2cSizeLocal_,&temp1_[r2cSizeLocal_as_*rSizeLocal_[2]*rSize_[0]],NULL,rSizeLocal_[2],1,FFTW_FORWARD,FFTW_ESTIMATE);
-	
+
 	bPlan_k_ = fftwf_plan_many_dft(1,&rSize_[0],kSizeLocal_[2]*r2cSizeLocal_,temp_,NULL,kSizeLocal_[2]*r2cSizeLocal_,1,temp_,NULL,kSizeLocal_[2]*r2cSizeLocal_,1,FFTW_BACKWARD,FFTW_ESTIMATE);
-	bPlan_j_ = fftwf_plan_many_dft(1,&rSize_[0],r2cSizeLocal_as_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp1_,NULL,rSizeLocal_[2]*r2cSizeLocal_as_,1,FFTW_BACKWARD,FFTW_ESTIMATE); 
+	bPlan_j_ = fftwf_plan_many_dft(1,&rSize_[0],r2cSizeLocal_as_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp1_,NULL,rSizeLocal_[2]*r2cSizeLocal_as_,1,FFTW_BACKWARD,FFTW_ESTIMATE);
 	bPlan_j_real_ =  fftwf_plan_many_dft(1,&rSize_[0],rSizeLocal_[2],&temp_[r2cSizeLocal_as_],NULL,rSizeLocal_[2]*r2cSizeLocal_,r2cSizeLocal_,&temp1_[r2cSizeLocal_as_*rSizeLocal_[2]*rSize_[0]],NULL,rSizeLocal_[2],1,FFTW_BACKWARD,FFTW_ESTIMATE);
 	bPlan_i_ = fftwf_plan_many_dft_c2r(1,&rSize_[0],rSizeLocal_[1] ,temp1_,NULL,1, r2cSize_,rData_,NULL,components_,rJump_[1]*components_,FFTW_ESTIMATE);
-	
-	
+
+
 	//allocation of field
-	
+
 	long rfield_size = rfield->lattice().sitesLocalGross();
 	long kfield_size = kfield->lattice().sitesLocalGross()*2; //*2 for complex type
-	
+
 	if(mem_type_==FFT_IN_PLACE)
 	{
 		if(rfield_size>kfield_size)
@@ -408,18 +408,18 @@ void PlanFFT_CPU<compType>::initialize(Field<float>*  rfield,Field<compType>*   
 		rfield->alloc();
 		kfield->alloc();
 	}
-	
-	
+
+
 	//Pointer to data
-	
+
 	rData_ = rfield->data();
 	rData_ += rfield->lattice().siteFirst()*components_;//usefull point !!
 	cData_ = (fftwf_complex*)kfield->data(); //to be sure that cData is instantiate !
 	kData_ = (fftwf_complex*)kfield->data();
 	kData_ += kfield->lattice().siteFirst()*components_;
-	
-	
-	
+
+
+
 }
 
 #endif
@@ -440,17 +440,17 @@ void PlanFFT_CPU<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 {
 	type_ = R2C;
 	mem_type_=mem_type;
-	
+
 	//general variable
 	if(rfield->components() != kfield->components())
 	{
 		cerr<<"Latfield2d::PlanFFT::initialize : fft curently work only for fields with same number of components"<<endl;
 		cerr<<"Latfield2d::PlanFFT::initialize : coordinate and fourier space fields have not the same number of components"<<endl;
 		cerr<<"Latfield2d : Abort Process Requested"<<endl;
-		
+
 	}
 	else components_ = rfield->components();
-	
+
 	for(int i = 0; i<3; i++)
 	{
 		rSize_[i]=rfield->lattice().size(i);
@@ -466,21 +466,21 @@ void PlanFFT_CPU<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 	else r2cSizeLocal_ = r2cSizeLocal_as_;
 	rHalo_ = rfield->lattice().halo();
 	kHalo_ = kfield->lattice().halo();
-	
-	
-	
 
-	
+
+
+
+
 	tempMemory.setTemp((r2cSize_+2) * (rSizeLocal_[1]+2) * (rSizeLocal_[2]+2));
 
 
-	
+
 	temp_  = tempMemory.temp1();
 	temp1_ = tempMemory.temp2();
-		
-	
-	
-	
+
+
+
+
 	if(rfield->lattice().dim()!=3)
 	{
 		if(parallel.isRoot())
@@ -488,13 +488,13 @@ void PlanFFT_CPU<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 			cerr<<"Latfield2d::PlanFFT::initialize : fft curently work only for 3d cubic lattice"<<endl;
 			cerr<<"Latfield2d::PlanFFT::initialize : real lattice have not 3 dimensions"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
-			
+
 		}
 		parallel.abortForce();
 	}
-	
+
 	//COUT << rSize_[0] << "   "<< rSize_[1]<< "   "<< rSize_[2] <<endl;
-	
+
 	if(rSize_[0]!=rSize_[1] | rSize_[1]!=rSize_[2])
 	{
 		if(parallel.isRoot())
@@ -502,15 +502,15 @@ void PlanFFT_CPU<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 			cerr<<"Latfield2d::PlanFFT::initialize : fft curently work only for 3d cubic lattice"<<endl;
 			cerr<<"Latfield2d::PlanFFT::initialize : real lattice is not cubic"<<endl;
 			cerr<<"Latfield2d : Abort Process Requested"<<endl;
-			
+
 		}
 		parallel.abortForce();
 	}
-	
+
 	//create the fftw_plan
-	
+
 	long rfield_size = rfield->lattice().sitesLocalGross();
-        long kfield_size = kfield->lattice().sitesLocalGross()*2; //*2 for complex type                                          
+        long kfield_size = kfield->lattice().sitesLocalGross()*2; //*2 for complex type
 
         if(mem_type_==FFT_IN_PLACE)
         {
@@ -532,25 +532,25 @@ void PlanFFT_CPU<compType>::initialize(Field<double>*  rfield,Field<compType>*  
         }
 
 
-	//Pointer to data                                                                                                        
+	//Pointer to data
 
 	rData_ = rfield->data();
-        rData_ += rfield->lattice().siteFirst()*components_;//usefull point !!                                                   
-        cData_ = (fftw_complex*)kfield->data(); //to be sure that cData is instantiate !                                         
+        rData_ += rfield->lattice().siteFirst()*components_;//usefull point !!
+        cData_ = (fftw_complex*)kfield->data(); //to be sure that cData is instantiate !
         kData_ = (fftw_complex*)kfield->data();
-        kData_ += kfield->lattice().siteFirst()*components_;	
+        kData_ += kfield->lattice().siteFirst()*components_;
 
 	fPlan_i_ = fftw_plan_many_dft_r2c(1,&rSize_[0],rSizeLocal_[1] ,rData_,NULL,components_, rJump_[1]*components_,temp_,NULL,rSizeLocal_[1]*rSizeLocal_[2],1,FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
-	fPlan_j_ = fftw_plan_many_dft(1,&rSize_[0],rSizeLocal_[2]*r2cSizeLocal_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,FFTW_FORWARD,FFTW_ESTIMATE); 
-	fPlan_k_ = fftw_plan_many_dft(1,&rSize_[0],r2cSizeLocal_as_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp1_,NULL,rSizeLocal_[2]*r2cSizeLocal_as_,1,FFTW_FORWARD,FFTW_ESTIMATE); 
+	fPlan_j_ = fftw_plan_many_dft(1,&rSize_[0],rSizeLocal_[2]*r2cSizeLocal_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,FFTW_FORWARD,FFTW_ESTIMATE);
+	fPlan_k_ = fftw_plan_many_dft(1,&rSize_[0],r2cSizeLocal_as_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp1_,NULL,rSizeLocal_[2]*r2cSizeLocal_as_,1,FFTW_FORWARD,FFTW_ESTIMATE);
 	fPlan_k_real_ =  fftw_plan_many_dft(1,&rSize_[0],rSizeLocal_[2],&temp_[r2cSizeLocal_as_],NULL,rSizeLocal_[2]*r2cSizeLocal_,r2cSizeLocal_,&temp1_[r2cSizeLocal_as_*rSizeLocal_[2]*rSize_[0]],NULL,rSizeLocal_[2],1,FFTW_FORWARD,FFTW_ESTIMATE);
-	
+
 	bPlan_k_ = fftw_plan_many_dft(1,&rSize_[0],kSizeLocal_[2]*r2cSizeLocal_,temp_,NULL,kSizeLocal_[2]*r2cSizeLocal_,1,temp_,NULL,kSizeLocal_[2]*r2cSizeLocal_,1,FFTW_BACKWARD,FFTW_ESTIMATE);
-	bPlan_j_ = fftw_plan_many_dft(1,&rSize_[0],r2cSizeLocal_as_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp1_,NULL,rSizeLocal_[2]*r2cSizeLocal_as_,1,FFTW_BACKWARD,FFTW_ESTIMATE); 
+	bPlan_j_ = fftw_plan_many_dft(1,&rSize_[0],r2cSizeLocal_as_,temp_,NULL,rSizeLocal_[2]*r2cSizeLocal_,1,temp1_,NULL,rSizeLocal_[2]*r2cSizeLocal_as_,1,FFTW_BACKWARD,FFTW_ESTIMATE);
 	bPlan_j_real_ =  fftw_plan_many_dft(1,&rSize_[0],rSizeLocal_[2],&temp_[r2cSizeLocal_as_],NULL,rSizeLocal_[2]*r2cSizeLocal_,r2cSizeLocal_,&temp1_[r2cSizeLocal_as_*rSizeLocal_[2]*rSize_[0]],NULL,rSizeLocal_[2],1,FFTW_BACKWARD,FFTW_ESTIMATE);
 	bPlan_i_ = fftw_plan_many_dft_c2r(1,&rSize_[0],rSizeLocal_[1] ,temp1_,NULL,1, r2cSize_,rData_,NULL,components_,rJump_[1]*components_,FFTW_ESTIMATE);
 
-	
+
 }
 
 #endif
@@ -558,29 +558,29 @@ void PlanFFT_CPU<compType>::initialize(Field<double>*  rfield,Field<compType>*  
 template<class compType>
 void PlanFFT_CPU<compType>::execute(int fft_type)
 {
-	
+
   //#ifdef SINGLE
 	if(type_ == R2C)
 	{
-		
+
 		if(fft_type == FFT_FORWARD)
 		{
 			int i,j,k;
 			int comp;
 			int comm_rank;
-			
+
 #ifdef SINGLE
 			float *p_in;
-			fftwf_complex *p_out;		
+			fftwf_complex *p_out;
 #else
 			double *p_in;
 			fftw_complex *p_out;
-#endif	
-			
+#endif
+
 			for(comp=0;comp<components_;comp++)
 			{
 
-			  
+
 								//execute first dimension fft, prepar rData in temp_ to be send via AlltoAll + gather
 
 #ifdef SINGLE
@@ -590,7 +590,7 @@ void PlanFFT_CPU<compType>::execute(int fft_type)
 					p_out = &temp_[l*rSizeLocal_[1]];
 					fftwf_execute_dft_r2c(fPlan_i_,p_in,p_out);
 				}
-		
+
 #else
 				for(int l = 0;l< rSizeLocal_[2] ;l++)
 				{
@@ -599,190 +599,191 @@ void PlanFFT_CPU<compType>::execute(int fft_type)
 					fftw_execute_dft_r2c(fPlan_i_,p_in,p_out);
 				}
 #endif
-		/*
-				//verif step 1
-				for(int proc=0; proc<parallel.size(); proc++)
-				{
-					if(proc==parallel.rank())
-					{
-					  for(k=0 ; k < rSizeLocal_[2] ;k++)
-					    {
-					      for(j=0 ; j < rSizeLocal_[1] ;j++)
-						{
-						  for(i=0 ; i <  (r2cSize_) ;i++)
-						    {
-						      //cout << "("<<parallel.grid_rank()[0]<<","<< parallel.grid_rank()[1]<< "),("<< i <<","<< j + rSizeLocal_[1]*parallel.grid_rank()[1] <<","<< k+rSizeLocal_[2]*parallel.grid_rank()[0]<<")"<< temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][0]<<" , "<<temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][1]<<endl;
-							//temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][0] = k + rSizeLocal_[2]*parallel.grid_rank()[0];
-							//temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][1] = 0;//j + rSizeLocal_[1]*parallel.grid_rank()[1];
-							//cout <<rSizeLocal_[1]<<" "<< parallel.grid_rank()[1] <<"("<< i <<","<< j + rSizeLocal_[1]*parallel.grid_rank()[1] <<","<< k+rSizeLocal_[2]*parallel.grid_rank()[0]<<")"<< temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][0]<<" , "<<temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][1]<<endl;
-						      
-
-						    }
-						}
-					    }
-					}
-					MPI_Barrier(MPI_COMM_WORLD);
-
-					}	*/		
-				
-				
-				MPI_Alltoall(temp_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, temp1_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, parallel.dim1_comm()[parallel.grid_rank()[0]]);
-				MPI_Gather(&temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]][0], 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC, &temp1_[rSize_[0]/2*rSizeLocal_[1]*rSizeLocal_[2]][0] , 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC ,parallel.grid_size()[1]-1, parallel.dim1_comm()[parallel.grid_rank()[0]]);
-				MPI_Barrier(parallel.dim1_comm()[parallel.grid_rank()[0]]);
-				
-				
-				
-				
-				if(parallel.last_proc()[1])
-				{
-					for(i=0;i<parallel.grid_size()[1];i++)transpose_0_2_last_proc(&temp1_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],&temp_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_],rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_);
-					implement_local_0_last_proc(&temp1_[rSize_[0]/2*rSizeLocal_[1]*rSizeLocal_[2]],temp_,rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_,parallel.grid_size()[1]);
-				}
-				else for(i=0;i<parallel.grid_size()[1];i++)transpose_0_2(&temp1_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],&temp_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_);
-				
-#ifdef SINGLE
-				fftwf_execute(fPlan_j_);
-#else
-				fftw_execute(fPlan_j_);
-#endif
-				//verif step 2
-				/*
-				for(k=0 ; k < rSizeLocal_[2] ;k++)
-				{
-					for(j=0 ; j < rSize_[1] ;j++)
-					{
-						for(i=0 ; i <  (r2cSizeLocal_) ;i++)
-						{
-						
-						  //cout << "("<< i + r2cSizeLocal_as_*parallel.grid_rank()[1] <<","<< j  <<","<< k+rSizeLocal_[2]*parallel.grid_rank()[0]<<")"<< temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][0]<<" , "<<temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][1]<<endl;							
-							temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][1] = k + rSizeLocal_[2]*parallel.grid_rank()[0] ;
-							temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][0] = i + r2cSizeLocal_as_*parallel.grid_rank()[1];
-
-						}
-					}
-					}*/
-				
-				
-			  
-				
-				MPI_Barrier(MPI_COMM_WORLD);
-				MPI_Alltoall(temp_, (2*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_), MPI_DATA_PREC, temp1_, (2*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_), MPI_DATA_PREC, parallel.dim0_comm()[parallel.grid_rank()[1]]);
-				MPI_Barrier(parallel.dim0_comm()[parallel.grid_rank()[1]]);
-				
-				
-				for(i=0;i<parallel.grid_size()[0];i++)transpose_1_2(&temp1_[i*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_],&temp_[i*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_], r2cSizeLocal_,rSizeLocal_[2],rSizeLocal_[2]);
-
-				/*
-				//verif transpos
-				for(int proc=0; proc<parallel.size(); proc++)
-				{
-					if(proc==parallel.rank())
-					{
-						for(k=0 ; k < rSize_[2] ;k++)
-						{
-							for(j=0 ; j < rSizeLocal_[2] ;j++)
-							{
-								for(i=0 ; i < r2cSizeLocal_ ;i++)
-								{
-								  cout  << "("<<parallel.grid_rank()[0]<<","<< parallel.grid_rank()[1]<< "),("<< i + r2cSizeLocal_as_*parallel.grid_rank()[1] <<","<< j+rSizeLocal_[2]*parallel.grid_rank()[0]  <<","<< k<<")"<< temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][0]<<" , "<<temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][1]<<endl;
-								  temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][0] = 1;
-								  temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][1] = 0;
-								}
-							}
-						}
-					}
-					MPI_Barrier(MPI_COMM_WORLD);
-					}*/
-
-			
-#ifdef SINGLE
-				for(int l=0;l<rSizeLocal_[2];l++)
-				  {
-				    fftwf_execute_dft(fPlan_k_,&temp_[l*r2cSizeLocal_],&temp1_[l*r2cSizeLocal_as_]);
-				  }
-
-				if(parallel.last_proc()[1])fftwf_execute(fPlan_k_real_);
-#else 
-				for(int l=0;l<rSizeLocal_[2];l++)
-				  {
-				    fftw_execute_dft(fPlan_k_,&temp_[l*r2cSizeLocal_],&temp1_[l*r2cSizeLocal_as_]);
-				  }
-
-				if(parallel.last_proc()[1])fftw_execute(fPlan_k_real_);
-
-#endif		
-		
-				
-				
-				MPI_Alltoall(temp1_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, temp_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, parallel.dim1_comm()[parallel.grid_rank()[0]]);
-				MPI_Scatter(&temp1_[r2cSizeLocal_as_*rSizeLocal_[2]*rSize_[0]][0], 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC, &temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]][0] , 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC ,parallel.grid_size()[1]-1, parallel.dim1_comm()[parallel.grid_rank()[0]]);
-				MPI_Barrier(parallel.dim1_comm()[parallel.grid_rank()[0]]);
+// 		/*
+// 				//verif step 1
+// 				for(int proc=0; proc<parallel.size(); proc++)
+// 				{
+// 					if(proc==parallel.rank())
+// 					{
+// 					  for(k=0 ; k < rSizeLocal_[2] ;k++)
+// 					    {
+// 					      for(j=0 ; j < rSizeLocal_[1] ;j++)
+// 						{
+// 						  for(i=0 ; i <  (r2cSize_) ;i++)
+// 						    {
+// 						      //cout << "("<<parallel.grid_rank()[0]<<","<< parallel.grid_rank()[1]<< "),("<< i <<","<< j + rSizeLocal_[1]*parallel.grid_rank()[1] <<","<< k+rSizeLocal_[2]*parallel.grid_rank()[0]<<")"<< temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][0]<<" , "<<temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][1]<<endl;
+// 							//temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][0] = k + rSizeLocal_[2]*parallel.grid_rank()[0];
+// 							//temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][1] = 0;//j + rSizeLocal_[1]*parallel.grid_rank()[1];
+// 							//cout <<rSizeLocal_[1]<<" "<< parallel.grid_rank()[1] <<"("<< i <<","<< j + rSizeLocal_[1]*parallel.grid_rank()[1] <<","<< k+rSizeLocal_[2]*parallel.grid_rank()[0]<<")"<< temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][0]<<" , "<<temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][1]<<endl;
 
 
-				transpose_back_0_3(temp_, kData_,r2cSize_,r2cSizeLocal_as_,rSizeLocal_[2],rSizeLocal_[1],parallel.grid_size()[1],kHalo_,components_,comp);
-				implement_0(&temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]], kData_,r2cSize_,rSizeLocal_[2],rSizeLocal_[1],kHalo_,components_,comp);
-				
-				
+// 						    }
+// 						}
+// 					    }
+// 					}
+// 					MPI_Barrier(MPI_COMM_WORLD);
+
+// 					}	*/
+
+
+// 				MPI_Alltoall(temp_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, temp1_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, parallel.dim1_comm()[parallel.grid_rank()[0]]);
+// 				MPI_Gather(&temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]][0], 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC, &temp1_[rSize_[0]/2*rSizeLocal_[1]*rSizeLocal_[2]][0] , 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC ,parallel.grid_size()[1]-1, parallel.dim1_comm()[parallel.grid_rank()[0]]);
+// 				MPI_Barrier(parallel.dim1_comm()[parallel.grid_rank()[0]]);
+
+
+
+
+// 				if(parallel.last_proc()[1])
+// 				{
+// 					for(i=0;i<parallel.grid_size()[1];i++)transpose_0_2_last_proc(&temp1_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],&temp_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_],rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_);
+// 					implement_local_0_last_proc(&temp1_[rSize_[0]/2*rSizeLocal_[1]*rSizeLocal_[2]],temp_,rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_,parallel.grid_size()[1]);
+// 				}
+// 				else for(i=0;i<parallel.grid_size()[1];i++)transpose_0_2(&temp1_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],&temp_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_);
+
+// #ifdef SINGLE
+// 				fftwf_execute(fPlan_j_);
+// #else
+// 				fftw_execute(fPlan_j_);
+// #endif
+// 				//verif step 2
+
+// 				for(k=0 ; k < rSizeLocal_[2] ;k++)
+// 				{
+// 					for(j=0 ; j < rSize_[1] ;j++)
+// 					{
+// 						for(i=0 ; i <  (r2cSizeLocal_) ;i++)
+// 						{
+
+// 						  //cout << "("<< i + r2cSizeLocal_as_*parallel.grid_rank()[1] <<","<< j  <<","<< k+rSizeLocal_[2]*parallel.grid_rank()[0]<<")"<< temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][0]<<" , "<<temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][1]<<endl;
+// 							temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][1] = k + rSizeLocal_[2]*parallel.grid_rank()[0] ;
+// 							temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][0] = i + r2cSizeLocal_as_*parallel.grid_rank()[1];
+
+// 						}
+// 					}
+// 					}
+
+
+
+
+// 				MPI_Barrier(MPI_COMM_WORLD);
+// 				MPI_Alltoall(temp_, (2*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_), MPI_DATA_PREC, temp1_, (2*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_), MPI_DATA_PREC, parallel.dim0_comm()[parallel.grid_rank()[1]]);
+// 				MPI_Barrier(parallel.dim0_comm()[parallel.grid_rank()[1]]);
+
+
+// 				for(i=0;i<parallel.grid_size()[0];i++)transpose_1_2(&temp1_[i*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_],&temp_[i*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_], r2cSizeLocal_,rSizeLocal_[2],rSizeLocal_[2]);
+
+// 				/*
+// 				//verif transpos
+// 				for(int proc=0; proc<parallel.size(); proc++)
+// 				{
+// 					if(proc==parallel.rank())
+// 					{
+// 						for(k=0 ; k < rSize_[2] ;k++)
+// 						{
+// 							for(j=0 ; j < rSizeLocal_[2] ;j++)
+// 							{
+// 								for(i=0 ; i < r2cSizeLocal_ ;i++)
+// 								{
+// 								  cout  << "("<<parallel.grid_rank()[0]<<","<< parallel.grid_rank()[1]<< "),("<< i + r2cSizeLocal_as_*parallel.grid_rank()[1] <<","<< j+rSizeLocal_[2]*parallel.grid_rank()[0]  <<","<< k<<")"<< temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][0]<<" , "<<temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][1]<<endl;
+// 								  temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][0] = 1;
+// 								  temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][1] = 0;
+// 								}
+// 							}
+// 						}
+// 					}
+// 					MPI_Barrier(MPI_COMM_WORLD);
+// 					}*/
+
+
+// #ifdef SINGLE
+// 				for(int l=0;l<rSizeLocal_[2];l++)
+// 				  {
+// 				    fftwf_execute_dft(fPlan_k_,&temp_[l*r2cSizeLocal_],&temp1_[l*r2cSizeLocal_as_]);
+// 				  }
+
+// 				if(parallel.last_proc()[1])fftwf_execute(fPlan_k_real_);
+// #else
+// 				for(int l=0;l<rSizeLocal_[2];l++)
+// 				  {
+// 				    fftw_execute_dft(fPlan_k_,&temp_[l*r2cSizeLocal_],&temp1_[l*r2cSizeLocal_as_]);
+// 				  }
+
+// 				if(parallel.last_proc()[1])fftw_execute(fPlan_k_real_);
+
+// #endif
+
+
+
+// 				MPI_Alltoall(temp1_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, temp_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, parallel.dim1_comm()[parallel.grid_rank()[0]]);
+// 				MPI_Scatter(&temp1_[r2cSizeLocal_as_*rSizeLocal_[2]*rSize_[0]][0], 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC, &temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]][0] , 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC ,parallel.grid_size()[1]-1, parallel.dim1_comm()[parallel.grid_rank()[0]]);
+// 				MPI_Barrier(parallel.dim1_comm()[parallel.grid_rank()[0]]);
+
+
+// 				transpose_back_0_3(temp_, kData_,r2cSize_,r2cSizeLocal_as_,rSizeLocal_[2],rSizeLocal_[1],parallel.grid_size()[1],kHalo_,components_,comp);
+// 				implement_0(&temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]], kData_,r2cSize_,rSizeLocal_[2],rSizeLocal_[1],kHalo_,components_,comp);
+
+
+
 			}
-			
-			
+
+
 		}
 		if(fft_type == FFT_BACKWARD)
-		{	
-			int i,j,k,comp; 
+		{
+			int i,j,k,comp;
 			int comm_rank;
-		
-#ifdef SINGLE	
+
+#ifdef SINGLE
 			float *p_out;
 			fftwf_complex *p_in;
 #else
 			double *p_out;
 			fftw_complex *p_in;
 #endif
-			
+
 			for(comp=0;comp<components_;comp++)
 			{
 				b_arrange_data_0(kData_, temp_,kSizeLocal_[0],kSizeLocal_[1] ,kSizeLocal_[2], kHalo_, components_, comp);
 				MPI_Barrier(MPI_COMM_WORLD);
-				
-				
-				
-				
+
+
+
+
 
 				MPI_Alltoall(temp_,2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, temp1_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, parallel.dim1_comm()[parallel.grid_rank()[0]]);
 				MPI_Gather(&temp_[rSize_[0]/2*rSizeLocal_[1]*rSizeLocal_[2]][0], 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC, &temp1_[rSize_[0]/2*rSizeLocal_[1]*rSizeLocal_[2]][0] , 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC ,parallel.grid_size()[1]-1, parallel.dim1_comm()[parallel.grid_rank()[0]]);
 			        MPI_Barrier(parallel.dim1_comm()[parallel.grid_rank()[0]]);
 
 
-				
+
 				if(parallel.last_proc()[1])
 				{
 					for(i=0;i<parallel.grid_size()[1];i++)transpose_0_2_last_proc(&temp1_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],&temp_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_],rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_);
 					implement_local_0_last_proc(&temp1_[rSize_[0]/2*rSizeLocal_[1]*rSizeLocal_[2]],temp_,rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_,parallel.grid_size()[1]);
 				}
 				else for(i=0;i<parallel.grid_size()[1];i++)transpose_0_2(&temp1_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],&temp_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_);
-				
-				
-				
-			
-				
-				
-#ifdef SINGLE				
+
+
+
+
+
+
+#ifdef SINGLE
 				fftwf_execute(bPlan_k_);
 #else
 				fftw_execute(bPlan_k_);
-#endif				
-			
-				
+#endif
+
+
 				MPI_Alltoall(temp_, (2*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_), MPI_DATA_PREC, temp1_, (2*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_), MPI_DATA_PREC, parallel.dim0_comm()[parallel.grid_rank()[1]]);
 				MPI_Barrier(parallel.dim0_comm()[parallel.grid_rank()[1]]);
 
 
 				for(i=0;i<parallel.grid_size()[0];i++)transpose_1_2(&temp1_[i*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_],&temp_[i*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_], r2cSizeLocal_,rSizeLocal_[2],rSizeLocal_[2]);
-				
 
 
-#ifdef SINGLE				
+
+#ifdef SINGLE
 
 				for(int l=0;l<rSizeLocal_[2];l++)
 				  {
@@ -790,7 +791,7 @@ void PlanFFT_CPU<compType>::execute(int fft_type)
 				  }
 
 				if(parallel.last_proc()[1])fftwf_execute(bPlan_j_real_);
-				
+
 #else
 				for(int l=0;l<rSizeLocal_[2];l++)
 				  {
@@ -798,10 +799,10 @@ void PlanFFT_CPU<compType>::execute(int fft_type)
 				  }
 
 				if(parallel.last_proc()[1])fftw_execute(bPlan_j_real_);
-#endif				
+#endif
 
 
-				
+
 
 
 				MPI_Alltoall(temp1_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, temp_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, parallel.dim1_comm()[parallel.grid_rank()[0]]);
@@ -809,10 +810,10 @@ void PlanFFT_CPU<compType>::execute(int fft_type)
 				MPI_Barrier(parallel.dim1_comm()[parallel.grid_rank()[0]]);
 
 
-				
+
 				b_transpose_back_0_1(temp_, temp1_,r2cSize_,r2cSizeLocal_as_,rSizeLocal_[2],rSizeLocal_[1],parallel.grid_size()[1]);
 				b_implement_0(&temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]], temp1_,r2cSize_,rSizeLocal_[2],rSizeLocal_[1]);
-				
+
 
 #ifdef SINGLE
 				for(int l = 0;l< rSizeLocal_[2] ;l++)
@@ -829,32 +830,32 @@ void PlanFFT_CPU<compType>::execute(int fft_type)
 					fftw_execute_dft_c2r(bPlan_i_,p_in,p_out);
 				}
 #endif
-				
-				
+
+
 			}
-			
-			
+
+
 
 		}
-		
-		
+
+
 	}
 	if(type_ == C2C)
 	{
-		
-		
+
+
 			if(fft_type == FFT_FORWARD)
 			{
 			}
 			if(fft_type == FFT_BACKWARD)
 			{
 			}
-			
-		
-		
-	}	
 
-	
+
+
+	}
+
+
 
 }
 
@@ -872,14 +873,14 @@ void PlanFFT_CPU<compType>::transpose_0_2( fftwf_complex * in, fftwf_complex * o
 		{
 			for(k=0;k<dim_k;k++)
 			{
-				
+
 				out[k+dim_k*(j+i*dim_j)][0]=in[i+dim_i*(j+k*dim_j)][0];
 				out[k+dim_k*(j+i*dim_j)][1]=in[i+dim_i*(j+k*dim_j)][1];
-				
+
 			}
 		}
 	}
-	
+
 }
 
 template<class compType>
@@ -967,7 +968,7 @@ void PlanFFT_CPU<compType>::implement_0(fftwf_complex * in, fftwf_complex * out,
 	i=r2c_size-1;
 	int r2c_halo = r2c_size + 2*halo;
 	int local_size_k_halo = local_size_k + 2*halo;
-	
+
 	for(j=0;j<local_size_j;j++)
 	{
 		for(k=0;k<local_size_k;k++)
@@ -976,7 +977,7 @@ void PlanFFT_CPU<compType>::implement_0(fftwf_complex * in, fftwf_complex * out,
 			out[comp+components*(i + r2c_halo * (k + local_size_k_halo *j))][1]=in[j + local_size_j *k][1];
 		}
 	}
-	
+
 }
 
 
@@ -997,14 +998,14 @@ void PlanFFT_CPU<compType>::b_arrange_data_0(fftwf_complex *in, fftwf_complex * 
 			}
 		}
 	}
-	
+
 }
 
 template<class compType>
 void PlanFFT_CPU<compType>::b_transpose_back_0_1( fftwf_complex * in, fftwf_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size)
 {
 	int i,j,k,l, i_t, j_t, k_t;
-	
+
 	for (i=0;i<local_r2c;i++)
 	{
 		for(k=0;k<local_size_k;k++)
@@ -1029,8 +1030,8 @@ void PlanFFT_CPU<compType>::b_implement_0(fftwf_complex * in, fftwf_complex * ou
 {
 	int i,j,k;
 	i=r2c_size-1;
-	
-	
+
+
 	for(j=0;j<local_size_j;j++)
 	{
 		for(k=0;k<local_size_k;k++)
@@ -1039,7 +1040,7 @@ void PlanFFT_CPU<compType>::b_implement_0(fftwf_complex * in, fftwf_complex * ou
 			out[i + r2c_size * (k + local_size_k *j)][1]=in[j + local_size_j *k][1];
 		}
 	}
-	
+
 }
 
 
@@ -1058,14 +1059,14 @@ void PlanFFT_CPU<compType>::transpose_0_2( fftw_complex * in, fftw_complex * out
 		{
 			for(k=0;k<dim_k;k++)
 			{
-				
+
 				out[k+dim_k*(j+i*dim_j)][0]=in[i+dim_i*(j+k*dim_j)][0];
 				out[k+dim_k*(j+i*dim_j)][1]=in[i+dim_i*(j+k*dim_j)][1];
-				
+
 			}
 		}
 	}
-	
+
 }
 
 template<class compType>
@@ -1153,7 +1154,7 @@ void PlanFFT_CPU<compType>::implement_0(fftw_complex * in, fftw_complex * out,in
 	i=r2c_size-1;
 	int r2c_halo = r2c_size + 2*halo;
 	int local_size_k_halo = local_size_k + 2*halo;
-	
+
 	for(j=0;j<local_size_j;j++)
 	{
 		for(k=0;k<local_size_k;k++)
@@ -1162,7 +1163,7 @@ void PlanFFT_CPU<compType>::implement_0(fftw_complex * in, fftw_complex * out,in
 			out[comp+components*(i + r2c_halo * (k + local_size_k_halo *j))][1]=in[j + local_size_j *k][1];
 		}
 	}
-	
+
 }
 
 
@@ -1183,14 +1184,14 @@ void PlanFFT_CPU<compType>::b_arrange_data_0(fftw_complex *in, fftw_complex * ou
 			}
 		}
 	}
-	
+
 }
 
 template<class compType>
 void PlanFFT_CPU<compType>::b_transpose_back_0_1( fftw_complex * in, fftw_complex * out,int r2c,int local_r2c,int local_size_j,int local_size_k,int proc_size)
 {
 	int i,j,k,l, i_t, j_t, k_t;
-	
+
 	for (i=0;i<local_r2c;i++)
 	{
 		for(k=0;k<local_size_k;k++)
@@ -1215,8 +1216,8 @@ void PlanFFT_CPU<compType>::b_implement_0(fftw_complex * in, fftw_complex * out,
 {
 	int i,j,k;
 	i=r2c_size-1;
-	
-	
+
+
 	for(j=0;j<local_size_j;j++)
 	{
 		for(k=0;k<local_size_k;k++)
@@ -1225,7 +1226,7 @@ void PlanFFT_CPU<compType>::b_implement_0(fftw_complex * in, fftw_complex * out,
 			out[i + r2c_size * (k + local_size_k *j)][1]=in[j + local_size_j *k][1];
 		}
 	}
-	
+
 }
 #endif
 

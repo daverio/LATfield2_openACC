@@ -1,20 +1,22 @@
 #---------------- parameters -----------------------------------------------#
 EXEC                      := poisson wave_test gettingStarted #fft_test
-TEST_WITH_EVERY_BUILD     := true
+TEST_WITH_EVERY_BUILD     := false
 COMPILER                  := CC
 INC                       := -I./../
 #LIB                       := -lfftw3 -lm
-LIB			  := -lcufftw -lcufft
-DEF_LATFIEILD             := -DFFT3D_ACC
+LIB_OPENACC  			  := -lcufftw -lcufft
+LIB_CPU                   := -lfftw3 -lm
+DEF_LATFIELD_OPENACC      := -DFFT3D_ACC
+DEF_LATFIELD_CPU         := -DFFT3D
 ifdef DEBUG
 OPT_OPENACC               :=
 OPT_CPU                   :=
 CFLAG                     := -g -std=c++11 -Mbounds -traceback -w
 else
-OPT_OPENACC               := -O3 -acc -Minfo=accel -ta=tesla:cc35 
+OPT_OPENACC               := -acc -ta=tesla:cc35 -Mcuda #-Minfo=accel
 OPT_CPU                   := -O3
-#CFLAG                     := -std=c++11 -w 
-CFLAG                     := -std=c++11 -w -DNO_OUTPUT  -VH15.7
+#CFLAG                     := -std=c++11 -w
+CFLAG                     := -std=c++11 -w -DFULL_OUTPUT -DLOOP_COUNT=2 -VH15.7
 
 endif
 
@@ -26,7 +28,7 @@ DEF                       := $(DEF_LATFIEILD)
 ifeq ($(TEST_WITH_EVERY_BUILD),true)
 ADDITIONAL_BUILD_TARGETS=tests
 else
-ADDITIONAL_BUILD_TARGETS
+ADDITIONAL_BUILD_TARGETS=
 endif
 .PHONY: all tests clean openacc cpu
 
@@ -44,10 +46,10 @@ tests: ${EXEC_OPENACC} ${EXEC_CPU}
 	./RunTest.sh
 
 %_cpu: %.cpp $(HEADER) makefile
-	$(COMPILER) $< $(INC) $(DEF) $(LIB) $(OPT_CPU) $(CFLAG) -o $@
+	$(COMPILER) $< $(INC) $(DEF_LATFIELD_CPU) $(LIB_CPU) $(OPT_CPU) $(CFLAG) -o $@
 
 %_openacc: %.cpp $(HEADER) makefile
-	$(COMPILER) $< $(INC) $(DEF) $(LIB) $(OPT_OPENACC) $(CFLAG) -o $@
+	$(COMPILER) $< $(INC) $(DEF_LATFIELD_OPENACC) $(LIB_OPENACC) $(OPT_OPENACC) $(CFLAG) -o $@
 
 clean:
 	rm -f $(EXEC) *.o *~
