@@ -3,8 +3,8 @@ EXEC                      := poisson wave_test #fft_test
 TEST_WITH_EVERY_BUILD     := true
 COMPILER                  := CC
 INC                       := -I./../
-#LIB                       := -lfftw3 -lm
-LIB			  := -lcufftw -lcufft
+LIB_OPENACC               := -lcufftw -lcufft
+LIB_CPU                   := -lfftw3 -lm
 DEF_LATFIELD_OPENACC      := -DFFT3D_ACC
 DEF_LATFIELD_CPU          := -DFFT3D
 ifdef DEBUG
@@ -44,10 +44,10 @@ tests: ${EXEC_OPENACC} ${EXEC_CPU}
 	./RunTest.sh
 
 %_cpu: %.cpp $(HEADER) makefile
-	$(COMPILER) $< $(INC) $(DEF_CPU) $(LIB) $(OPT_CPU) $(CFLAG) -o $@
+	$(COMPILER) $< $(INC) $(DEF_CPU) $(LIB_CPU) $(OPT_CPU) $(CFLAG) -o $@
 
 %_openacc: %.cpp $(HEADER) makefile
-	$(COMPILER) $< $(INC) $(DEF_OPENACC) $(LIB) $(OPT_OPENACC) $(CFLAG) -o $@
+	$(COMPILER) $< $(INC) $(DEF_OPENACC) $(LIB_OPENACC) $(OPT_OPENACC) $(CFLAG) -o $@
 
 clean:
 	rm -f $(EXEC_CPU) $(EXEC_OPENACC) *.o *~
