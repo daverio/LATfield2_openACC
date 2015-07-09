@@ -13,11 +13,11 @@ function run_test {
 	problem_size=$2
 	n_proc=${n_proc_default}
 	m_proc=${m_proc_default}
-	if [ ! -z $3 ]; then
+	if [ -n $3 ]; then
 		n_proc=$3
 	fi
-	if [ ! -z $4 ]; then
-		n_proc=m_proc
+	if [ -n $4 ]; then
+		m_proc=$4
 	fi
 	total_proc=`expr $n_proc \* $m_proc`
 	echo "Running ${exec_name} with problem size ${problem_size}, ${n_proc} x ${m_proc} processes"
