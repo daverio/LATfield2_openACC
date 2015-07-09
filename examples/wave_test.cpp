@@ -56,6 +56,11 @@ int main(int argc, char **argv)
     phiK.initialize(latK,comp);
     PlanFFT<Imag> planPhi(&phi,&phiK);
 
+	double cpu_time_start;
+	double cpu_time_total = 0.;
+	double fft_time_start;
+	double fft_time_total = 0.;
+
 #ifndef LOOP_COUNT
 #define LOOP_COUNT 4
 #endif 
@@ -66,16 +71,19 @@ int main(int argc, char **argv)
          {
              for (l = 0; l < LOOP_COUNT; l++)
              {
+				cpu_time_start = MPI_Wtime();
 		for (x.first(); x.test(); x.next())
 		{
 			phi(x) = cos(2. * M_PI * i * x.coord(0) / (double) BoxSize) * cos(2. * M_PI * j * x.coord(1) / (double) BoxSize) * cos(2. * M_PI * l * x.coord(2) / (double) BoxSize);
 		}
+				cpu_time_total += MPI_Wtime() - cpu_time_start;
 
 #ifdef FULL_OUTPUT
 		COUT << endl << "iteration (" << i << ", " << j << ", " << l << ")" << endl << endl;
 #endif
-		
+		fft_time_start = MPI_Wtime();
 		planPhi.execute(FFT_FORWARD);
+		fft_time_total += MPI_Wtime() - fft_time_start;
 
 #ifdef FULL_OUTPUT
 		for (rnk = 0; rnk < parallel.size(); rnk++)
@@ -139,6 +147,12 @@ int main(int argc, char **argv)
              }
          }
     }
+
+	parallel.max(cpu_time_total);
+	parallel.max(fft_time_total);
+
+	COUT << " timing information: field setup " << cpu_time_total << " sec, FFTs " << fft_time_total << " sec" << endl;
+
     parallel.sum(count);
 
     exit(count);
