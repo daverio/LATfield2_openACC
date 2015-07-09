@@ -50,4 +50,4 @@ tests: ${EXEC_OPENACC} ${EXEC_CPU}
 	$(COMPILER) $< $(INC) $(DEF_OPENACC) $(LIB) $(OPT_OPENACC) $(CFLAG) -o $@
 
 clean:
-	rm -f $(EXEC) *.o *~
+	rm -f $(EXEC_CPU) $(EXEC_OPENACC) *.o *~

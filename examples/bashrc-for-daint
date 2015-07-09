@@ -1,5 +1,7 @@
 test -s ~/.alias && . ~/.alias || true
 
+export LM_LICENSE_FILE=/users/hck28/pgi/license.dat
+
 if [[ $HOSTNAME != ela* ]]; then
 
         #modules
