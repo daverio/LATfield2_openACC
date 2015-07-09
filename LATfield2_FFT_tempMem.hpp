@@ -80,6 +80,7 @@ temporaryMemFFT::~temporaryMemFFT()
     if(allocated_!=0){
 
 #pragma acc exit data delete(temp1_)
+#pragma acc exit data delete(temp2_)
 
 #ifndef FFT3D_ACC
 #ifdef SINGLE
@@ -138,6 +139,7 @@ temporaryMemFFT::temporaryMemFFT(long size)
 	allocated_=size;
 #pragma acc enter data copyin(this)
 #pragma acc enter data create(temp1_[0:alocSize][0:2])
+#pragma acc enter data create(temp2_[0:alocSize][0:2])
 }
 
 
@@ -173,6 +175,7 @@ int temporaryMemFFT::setTemp(long size)
 	    if(allocated_!=0){
 
 #pragma acc exit data delete(temp1_)
+#pragma acc exit data delete(temp2_)
 
 #ifndef FFT3D_ACC
 #ifdef SINGLE
@@ -215,6 +218,7 @@ int temporaryMemFFT::setTemp(long size)
 #endif
 /// maybe add temp2_ if segfault
 #pragma acc enter data create(temp1_[0:alocSize][0:2])
+#pragma acc enter data create(temp2_[0:alocSize][0:2])
 	}
 	return 1;
 }
