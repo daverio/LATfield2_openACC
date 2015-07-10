@@ -105,6 +105,8 @@ class PlanFFT_ACC
 
 #endif
 
+	double timing;
+
     private:
         bool status_;
 		bool type_;
@@ -558,6 +560,8 @@ void PlanFFT_ACC<compType>::execute(int fft_type)
 
     int comp;
 
+    double time_comp;
+    timing = 0.;
 
     //#ifdef SINGLE
 	if(type_ == R2C)
@@ -567,6 +571,7 @@ void PlanFFT_ACC<compType>::execute(int fft_type)
 		    for(comp=0;comp<components_;comp++)
 		    {
 				this->execute_r2c_forward_h2d_send(comp);
+				time_comp = MPI_Wtime();
 				this->execute_r2c_forward_dim0_fft();
 
 			// /* 2015-7-9: This is only here for debug reasons to see what happens in phase 1 */
@@ -584,6 +589,7 @@ void PlanFFT_ACC<compType>::execute(int fft_type)
 				this->execute_r2c_forward_dim2_fft();
             	this->execute_r2c_forward_dim2_a2a();
             	this->execute_r2c_forward_dim2_tsp(comp);
+				timing += MPI_Wtime() - time_comp;
                         /*
 			/// no need to use it as execute_r2c_forward_dim2_tsp on host and already do the work!!!
 			this->execute_r2c_forward_d2h_send(comp);
