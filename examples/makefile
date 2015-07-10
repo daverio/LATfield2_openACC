@@ -13,7 +13,7 @@ OPT_OPENACC               :=
 OPT_CPU                   :=
 CFLAG                     := -g -std=c++11 -Mbounds -traceback -w
 else
-OPT_OPENACC               := -acc -ta=tesla:cc35 -Mcuda #-Minfo=accel
+OPT_OPENACC               := -O3 -acc -ta=tesla:cc35 -Mcuda #-Minfo=accel
 OPT_CPU                   := -O3
 #CFLAG                     := -std=c++11 -w
 CFLAG                     := -std=c++11 -w -DNO_OUTPUT -DLOOP_COUNT=4 -VH15.7
