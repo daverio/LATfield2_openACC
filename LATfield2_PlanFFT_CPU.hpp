@@ -599,136 +599,136 @@ void PlanFFT_CPU<compType>::execute(int fft_type)
 					fftw_execute_dft_r2c(fPlan_i_,p_in,p_out);
 				}
 #endif
-// 		/*
-// 				//verif step 1
-// 				for(int proc=0; proc<parallel.size(); proc++)
-// 				{
-// 					if(proc==parallel.rank())
-// 					{
-// 					  for(k=0 ; k < rSizeLocal_[2] ;k++)
-// 					    {
-// 					      for(j=0 ; j < rSizeLocal_[1] ;j++)
-// 						{
-// 						  for(i=0 ; i <  (r2cSize_) ;i++)
-// 						    {
-// 						      //cout << "("<<parallel.grid_rank()[0]<<","<< parallel.grid_rank()[1]<< "),("<< i <<","<< j + rSizeLocal_[1]*parallel.grid_rank()[1] <<","<< k+rSizeLocal_[2]*parallel.grid_rank()[0]<<")"<< temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][0]<<" , "<<temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][1]<<endl;
-// 							//temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][0] = k + rSizeLocal_[2]*parallel.grid_rank()[0];
-// 							//temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][1] = 0;//j + rSizeLocal_[1]*parallel.grid_rank()[1];
-// 							//cout <<rSizeLocal_[1]<<" "<< parallel.grid_rank()[1] <<"("<< i <<","<< j + rSizeLocal_[1]*parallel.grid_rank()[1] <<","<< k+rSizeLocal_[2]*parallel.grid_rank()[0]<<")"<< temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][0]<<" , "<<temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][1]<<endl;
-
-
-// 						    }
-// 						}
-// 					    }
-// 					}
-// 					MPI_Barrier(MPI_COMM_WORLD);
-
-// 					}	*/
-
-
-// 				MPI_Alltoall(temp_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, temp1_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, parallel.dim1_comm()[parallel.grid_rank()[0]]);
-// 				MPI_Gather(&temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]][0], 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC, &temp1_[rSize_[0]/2*rSizeLocal_[1]*rSizeLocal_[2]][0] , 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC ,parallel.grid_size()[1]-1, parallel.dim1_comm()[parallel.grid_rank()[0]]);
-// 				MPI_Barrier(parallel.dim1_comm()[parallel.grid_rank()[0]]);
-
-
-
-
-// 				if(parallel.last_proc()[1])
-// 				{
-// 					for(i=0;i<parallel.grid_size()[1];i++)transpose_0_2_last_proc(&temp1_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],&temp_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_],rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_);
-// 					implement_local_0_last_proc(&temp1_[rSize_[0]/2*rSizeLocal_[1]*rSizeLocal_[2]],temp_,rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_,parallel.grid_size()[1]);
-// 				}
-// 				else for(i=0;i<parallel.grid_size()[1];i++)transpose_0_2(&temp1_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],&temp_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_);
-
-// #ifdef SINGLE
-// 				fftwf_execute(fPlan_j_);
-// #else
-// 				fftw_execute(fPlan_j_);
-// #endif
-// 				//verif step 2
-
-// 				for(k=0 ; k < rSizeLocal_[2] ;k++)
-// 				{
-// 					for(j=0 ; j < rSize_[1] ;j++)
-// 					{
-// 						for(i=0 ; i <  (r2cSizeLocal_) ;i++)
-// 						{
-
-// 						  //cout << "("<< i + r2cSizeLocal_as_*parallel.grid_rank()[1] <<","<< j  <<","<< k+rSizeLocal_[2]*parallel.grid_rank()[0]<<")"<< temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][0]<<" , "<<temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][1]<<endl;
-// 							temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][1] = k + rSizeLocal_[2]*parallel.grid_rank()[0] ;
-// 							temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][0] = i + r2cSizeLocal_as_*parallel.grid_rank()[1];
-
-// 						}
-// 					}
-// 					}
-
-
-
-
-// 				MPI_Barrier(MPI_COMM_WORLD);
-// 				MPI_Alltoall(temp_, (2*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_), MPI_DATA_PREC, temp1_, (2*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_), MPI_DATA_PREC, parallel.dim0_comm()[parallel.grid_rank()[1]]);
-// 				MPI_Barrier(parallel.dim0_comm()[parallel.grid_rank()[1]]);
-
-
-// 				for(i=0;i<parallel.grid_size()[0];i++)transpose_1_2(&temp1_[i*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_],&temp_[i*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_], r2cSizeLocal_,rSizeLocal_[2],rSizeLocal_[2]);
-
-// 				/*
-// 				//verif transpos
-// 				for(int proc=0; proc<parallel.size(); proc++)
-// 				{
-// 					if(proc==parallel.rank())
-// 					{
-// 						for(k=0 ; k < rSize_[2] ;k++)
-// 						{
-// 							for(j=0 ; j < rSizeLocal_[2] ;j++)
-// 							{
-// 								for(i=0 ; i < r2cSizeLocal_ ;i++)
-// 								{
-// 								  cout  << "("<<parallel.grid_rank()[0]<<","<< parallel.grid_rank()[1]<< "),("<< i + r2cSizeLocal_as_*parallel.grid_rank()[1] <<","<< j+rSizeLocal_[2]*parallel.grid_rank()[0]  <<","<< k<<")"<< temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][0]<<" , "<<temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][1]<<endl;
-// 								  temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][0] = 1;
-// 								  temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][1] = 0;
-// 								}
-// 							}
-// 						}
-// 					}
-// 					MPI_Barrier(MPI_COMM_WORLD);
-// 					}*/
-
-
-// #ifdef SINGLE
-// 				for(int l=0;l<rSizeLocal_[2];l++)
-// 				  {
-// 				    fftwf_execute_dft(fPlan_k_,&temp_[l*r2cSizeLocal_],&temp1_[l*r2cSizeLocal_as_]);
-// 				  }
-
-// 				if(parallel.last_proc()[1])fftwf_execute(fPlan_k_real_);
-// #else
-// 				for(int l=0;l<rSizeLocal_[2];l++)
-// 				  {
-// 				    fftw_execute_dft(fPlan_k_,&temp_[l*r2cSizeLocal_],&temp1_[l*r2cSizeLocal_as_]);
-// 				  }
-
-// 				if(parallel.last_proc()[1])fftw_execute(fPlan_k_real_);
-
-// #endif
-
-
-
-// 				MPI_Alltoall(temp1_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, temp_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, parallel.dim1_comm()[parallel.grid_rank()[0]]);
-// 				MPI_Scatter(&temp1_[r2cSizeLocal_as_*rSizeLocal_[2]*rSize_[0]][0], 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC, &temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]][0] , 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC ,parallel.grid_size()[1]-1, parallel.dim1_comm()[parallel.grid_rank()[0]]);
-// 				MPI_Barrier(parallel.dim1_comm()[parallel.grid_rank()[0]]);
-
-
-// 				transpose_back_0_3(temp_, kData_,r2cSize_,r2cSizeLocal_as_,rSizeLocal_[2],rSizeLocal_[1],parallel.grid_size()[1],kHalo_,components_,comp);
-// 				implement_0(&temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]], kData_,r2cSize_,rSizeLocal_[2],rSizeLocal_[1],kHalo_,components_,comp);
-
-
-				/* 2015-7-9: This is only here for debug reasons to see what happens in phase 1 */
-				for(int l = 0; l < kSizeLocal_[0]*kSizeLocal_[1]*kSizeLocal_[2]; l++)
+		/*
+				//verif step 1
+				for(int proc=0; proc<parallel.size(); proc++)
 				{
-					kData_[l][0] = temp_[l][0];
-					kData_[l][1] = temp_[l][1];
+					if(proc==parallel.rank())
+					{
+					  for(k=0 ; k < rSizeLocal_[2] ;k++)
+					    {
+					      for(j=0 ; j < rSizeLocal_[1] ;j++)
+						{
+						  for(i=0 ; i <  (r2cSize_) ;i++)
+						    {
+						      //cout << "("<<parallel.grid_rank()[0]<<","<< parallel.grid_rank()[1]<< "),("<< i <<","<< j + rSizeLocal_[1]*parallel.grid_rank()[1] <<","<< k+rSizeLocal_[2]*parallel.grid_rank()[0]<<")"<< temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][0]<<" , "<<temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][1]<<endl;
+							//temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][0] = k + rSizeLocal_[2]*parallel.grid_rank()[0];
+							//temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][1] = 0;//j + rSizeLocal_[1]*parallel.grid_rank()[1];
+							//cout <<rSizeLocal_[1]<<" "<< parallel.grid_rank()[1] <<"("<< i <<","<< j + rSizeLocal_[1]*parallel.grid_rank()[1] <<","<< k+rSizeLocal_[2]*parallel.grid_rank()[0]<<")"<< temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][0]<<" , "<<temp_[j+rSizeLocal_[1]*(k+rSizeLocal_[2] *i)][1]<<endl;
+
+
+						    }
+						}
+					    }
+					}
+					MPI_Barrier(MPI_COMM_WORLD);
+
+					}	*/
+
+
+				MPI_Alltoall(temp_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, temp1_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, parallel.dim1_comm()[parallel.grid_rank()[0]]);
+				MPI_Gather(&temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]][0], 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC, &temp1_[rSize_[0]/2*rSizeLocal_[1]*rSizeLocal_[2]][0] , 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC ,parallel.grid_size()[1]-1, parallel.dim1_comm()[parallel.grid_rank()[0]]);
+				MPI_Barrier(parallel.dim1_comm()[parallel.grid_rank()[0]]);
+
+
+
+
+				if(parallel.last_proc()[1])
+				{
+					for(i=0;i<parallel.grid_size()[1];i++)transpose_0_2_last_proc(&temp1_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],&temp_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_],rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_);
+					implement_local_0_last_proc(&temp1_[rSize_[0]/2*rSizeLocal_[1]*rSizeLocal_[2]],temp_,rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_,parallel.grid_size()[1]);
 				}
+				else for(i=0;i<parallel.grid_size()[1];i++)transpose_0_2(&temp1_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],&temp_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_);
+
+#ifdef SINGLE
+				fftwf_execute(fPlan_j_);
+#else
+				fftw_execute(fPlan_j_);
+#endif
+				//verif step 2
+
+				for(k=0 ; k < rSizeLocal_[2] ;k++)
+				{
+					for(j=0 ; j < rSize_[1] ;j++)
+					{
+						for(i=0 ; i <  (r2cSizeLocal_) ;i++)
+						{
+
+						  //cout << "("<< i + r2cSizeLocal_as_*parallel.grid_rank()[1] <<","<< j  <<","<< k+rSizeLocal_[2]*parallel.grid_rank()[0]<<")"<< temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][0]<<" , "<<temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][1]<<endl;
+							temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][1] = k + rSizeLocal_[2]*parallel.grid_rank()[0] ;
+							temp_[i+r2cSizeLocal_*(k+rSizeLocal_[2]*j)][0] = i + r2cSizeLocal_as_*parallel.grid_rank()[1];
+
+						}
+					}
+					}
+
+
+
+
+				MPI_Barrier(MPI_COMM_WORLD);
+				MPI_Alltoall(temp_, (2*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_), MPI_DATA_PREC, temp1_, (2*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_), MPI_DATA_PREC, parallel.dim0_comm()[parallel.grid_rank()[1]]);
+				MPI_Barrier(parallel.dim0_comm()[parallel.grid_rank()[1]]);
+
+
+				for(i=0;i<parallel.grid_size()[0];i++)transpose_1_2(&temp1_[i*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_],&temp_[i*rSizeLocal_[2]*rSizeLocal_[2]*r2cSizeLocal_], r2cSizeLocal_,rSizeLocal_[2],rSizeLocal_[2]);
+
+				/*
+				//verif transpos
+				for(int proc=0; proc<parallel.size(); proc++)
+				{
+					if(proc==parallel.rank())
+					{
+						for(k=0 ; k < rSize_[2] ;k++)
+						{
+							for(j=0 ; j < rSizeLocal_[2] ;j++)
+							{
+								for(i=0 ; i < r2cSizeLocal_ ;i++)
+								{
+								  cout  << "("<<parallel.grid_rank()[0]<<","<< parallel.grid_rank()[1]<< "),("<< i + r2cSizeLocal_as_*parallel.grid_rank()[1] <<","<< j+rSizeLocal_[2]*parallel.grid_rank()[0]  <<","<< k<<")"<< temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][0]<<" , "<<temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][1]<<endl;
+								  temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][0] = 1;
+								  temp_[i+r2cSizeLocal_*(j+rSizeLocal_[2]*k)][1] = 0;
+								}
+							}
+						}
+					}
+					MPI_Barrier(MPI_COMM_WORLD);
+					}*/
+
+
+#ifdef SINGLE
+				for(int l=0;l<rSizeLocal_[2];l++)
+				  {
+				    fftwf_execute_dft(fPlan_k_,&temp_[l*r2cSizeLocal_],&temp1_[l*r2cSizeLocal_as_]);
+				  }
+
+				if(parallel.last_proc()[1])fftwf_execute(fPlan_k_real_);
+#else
+				for(int l=0;l<rSizeLocal_[2];l++)
+				  {
+				    fftw_execute_dft(fPlan_k_,&temp_[l*r2cSizeLocal_],&temp1_[l*r2cSizeLocal_as_]);
+				  }
+
+				if(parallel.last_proc()[1])fftw_execute(fPlan_k_real_);
+
+#endif
+
+
+
+				MPI_Alltoall(temp1_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, temp_, 2* rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_, MPI_DATA_PREC, parallel.dim1_comm()[parallel.grid_rank()[0]]);
+				MPI_Scatter(&temp1_[r2cSizeLocal_as_*rSizeLocal_[2]*rSize_[0]][0], 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC, &temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]][0] , 2*rSizeLocal_[1]*rSizeLocal_[2], MPI_DATA_PREC ,parallel.grid_size()[1]-1, parallel.dim1_comm()[parallel.grid_rank()[0]]);
+				MPI_Barrier(parallel.dim1_comm()[parallel.grid_rank()[0]]);
+
+
+				transpose_back_0_3(temp_, kData_,r2cSize_,r2cSizeLocal_as_,rSizeLocal_[2],rSizeLocal_[1],parallel.grid_size()[1],kHalo_,components_,comp);
+				implement_0(&temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]], kData_,r2cSize_,rSizeLocal_[2],rSizeLocal_[1],kHalo_,components_,comp);
+
+
+				// /* 2015-7-9: This is only here for debug reasons to see what happens in phase 1 */
+				// for(int l = 0; l < kSizeLocal_[0]*kSizeLocal_[1]*kSizeLocal_[2]; l++)
+				// {
+				// 	kData_[l][0] = temp_[l][0];
+				// 	kData_[l][1] = temp_[l][1];
+				// }
 
 			}
 

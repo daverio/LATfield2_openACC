@@ -25,7 +25,7 @@ function run_test {
 }
 
 #run tests
-run_test gettingStarted_openacc
+# run_test gettingStarted_openacc
 # run_test fft_test_cpu 64
 # run_test poisson_cpu 64
 # run_test fft_test_cpu 128
