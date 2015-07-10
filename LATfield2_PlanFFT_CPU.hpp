@@ -723,6 +723,12 @@ void PlanFFT_CPU<compType>::execute(int fft_type)
 // 				implement_0(&temp_[(r2cSize_-1)*rSizeLocal_[1]*rSizeLocal_[2]], kData_,r2cSize_,rSizeLocal_[2],rSizeLocal_[1],kHalo_,components_,comp);
 
 
+				/* 2015-7-9: This is only here for debug reasons to see what happens in phase 1 */
+				for(int l = 0; l < kSizeLocal_[0]*kSizeLocal_[1]*kSizeLocal_[2]; l++)
+				{
+					kData_[l][0] = temp_[l][0];
+					kData_[l][1] = temp_[l][1];
+				}
 
 			}
 
