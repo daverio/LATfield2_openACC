@@ -56,6 +56,11 @@ int main(int argc, char **argv)
     phiK.initialize(latK,comp);
     PlanFFT<Imag> planPhi(&phi,&phiK);
 
+	double cpu_time_start;
+	double cpu_time_total = 0.;
+	double fft_time_start;
+	double fft_time_total = 0.;
+
 #ifndef LOOP_COUNT
 #define LOOP_COUNT 4
 #endif 
@@ -66,17 +71,19 @@ int main(int argc, char **argv)
          {
              for (l = 0; l < LOOP_COUNT; l++)
              {
+				cpu_time_start = MPI_Wtime();
 		for (x.first(); x.test(); x.next())
 		{
-		    phi(x) = cos(2. * M_PI * i * x.coord(0) / (double) BoxSize) * cos(2. * M_PI * j * x.coord(1) / (double) BoxSize) * cos(2. * M_PI * l * x.coord(2) / (double) BoxSize);
-		    //phi(x)=x.coord(0);
+			phi(x) = cos(2. * M_PI * i * x.coord(0) / (double) BoxSize) * cos(2. * M_PI * j * x.coord(1) / (double) BoxSize) * cos(2. * M_PI * l * x.coord(2) / (double) BoxSize);
 		}
+				cpu_time_total += MPI_Wtime() - cpu_time_start;
 
 #ifdef FULL_OUTPUT
 		COUT << endl << "iteration (" << i << ", " << j << ", " << l << ")" << endl << endl;
 #endif
-		
+		fft_time_start = MPI_Wtime();
 		planPhi.execute(FFT_FORWARD);
+		fft_time_total += MPI_Wtime() - fft_time_start;
 
 #ifdef FULL_OUTPUT
 		for (rnk = 0; rnk < parallel.size(); rnk++)
@@ -87,11 +94,13 @@ int main(int argc, char **argv)
 				cout << " rank = " << rnk << endl;
 				for (k.first(); k.test(); k.next())
 				{
-					if (k.coord(0) == 0)cout << " " << setfill('0') << setw(3) << k.coord(1) << "-" << setfill('0') << setw(3) << k.coord(2) << " ";
+					if (k.coord(0) == 0)
+						cout << " " << setfill('0') << setw(3) << k.coord(1) << "-" << setfill('0') << setw(3) << k.coord(2) << " ";
 					
 					cout << setprecision(2) << chop(phiK(k).real()/lat.sites(), 1.0e-12) << "+" << setprecision(2) << chop(phiK(k).imag()/lat.sites(), 1.0e-12) << "i ";
 
-					    if (k.coord(0) == latK.size(0)-1)cout << endl;
+					if (k.coord(0) == latK.size(0)-1)
+						cout << endl;
 				}
 			}
 		}
@@ -129,7 +138,7 @@ int main(int argc, char **argv)
 			if (fabs(phiK(k).real()/lat.sites() - val_re) > TOLERANCE || fabs(phiK(k).imag()/lat.sites() - val_im) > TOLERANCE)
 			{
 #ifndef NO_OUTPUT
-/				cout << " proc#" << parallel.rank() << " : " << setfill('0') << setw(3) << k.coord(0) << "-" << setfill('0') << setw(3) << k.coord(1) << "-" << setfill('0') << setw(3) << k.coord(2) << "  " << phiK(k).real() << "+" << phiK(k).imag() << "i  exceeding tolerance!" << endl;
+				cout << " proc#" << parallel.rank() << " : " << setfill('0') << setw(3) << k.coord(0) << "-" << setfill('0') << setw(3) << k.coord(1) << "-" << setfill('0') << setw(3) << k.coord(2) << "  " << phiK(k).real() << "+" << phiK(k).imag() << "i  exceeding tolerance!" << endl;
 #endif
 				count++;
 			}
@@ -138,6 +147,12 @@ int main(int argc, char **argv)
              }
          }
     }
+
+	parallel.max(cpu_time_total);
+	parallel.max(fft_time_total);
+
+	COUT << " timing information: field setup " << cpu_time_total << " sec, FFTs " << fft_time_total << " sec" << endl;
+
     parallel.sum(count);
 
     exit(count);
