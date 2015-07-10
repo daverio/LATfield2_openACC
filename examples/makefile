@@ -16,7 +16,7 @@ else
 OPT_OPENACC               := -acc -ta=tesla:cc35 -Mcuda #-Minfo=accel
 OPT_CPU                   := -O3
 #CFLAG                     := -std=c++11 -w
-CFLAG                     := -std=c++11 -w -DFULL_OUTPUT -DLOOP_COUNT=2 -VH15.7
+CFLAG                     := -std=c++11 -w -DNO_OUTPUT -DLOOP_COUNT=2 -VH15.7
 
 endif
 
