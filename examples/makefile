@@ -52,4 +52,4 @@ tests: ${EXEC_OPENACC} ${EXEC_CPU}
 	$(COMPILER) $< $(INC) $(DEF_LATFIELD_OPENACC) $(LIB_OPENACC) $(OPT_OPENACC) $(CFLAG) -o $@
 
 clean:
-	rm -f $(EXEC) *.o *~
+	rm -f $(EXEC_CPU) $(EXEC_OPENACC) *.o *~
