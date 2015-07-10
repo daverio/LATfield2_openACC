@@ -37,5 +37,6 @@ run_test wave_test_cpu 8 2 2 #this worked 2015-7-9 on cpu after review
 run_test wave_test_openacc 16 #this worked 2015-7-9 after Julian found the jump bug
 run_test wave_test_openacc 64 2 4 #this worked 2015-7-9 after Julian found the jump bug
 run_test poisson_cpu 64 #this worked 2015-7-10 after Julian copied over the old CPU version from fftw branch
+#run_test poisson_openacc 64 #this still fails as of 2015-7-10 since Backward transform is not yet fully implemented on GPU
 
 echo "All tests passed"
