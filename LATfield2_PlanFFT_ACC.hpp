@@ -776,8 +776,6 @@ void PlanFFT_ACC<compType>::execute_r2c_forward_dim0_tsp()
     }
     else for(int i=0;i<parallel.grid_size()[1];i++)transpose_0_2(&temp2_r2c_complex_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],&temp_r2c_complex_[i*rSizeLocal_[1]*rSizeLocal_[2]*r2cSizeLocal_as_],rSizeLocal_[1],rSizeLocal_[2],r2cSizeLocal_as_);
 
-
-
 #pragma acc update device(temp_r2c_complex_[0:(r2cSizeLocal_ * rSize_[1]* rSizeLocal_[2]) ][0:2])
 
 }
