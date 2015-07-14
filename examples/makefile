@@ -1,5 +1,5 @@
 #---------------- parameters -----------------------------------------------#
-EXEC                      := poisson wave_test gettingStarted #fft_test
+EXEC                      := poisson wave_test wave_test_back gettingStarted #fft_test
 TEST_WITH_EVERY_BUILD     := false
 COMPILER                  := CC
 INC                       := -I./../
